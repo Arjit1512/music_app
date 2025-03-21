@@ -34,13 +34,14 @@ reviews = db["reviews"]
 
 class Review(BaseModel):
     album : str  
-    title: str
+    albumImg : str 
+    stars: int
     comment : str  
     date: str | None = None
 
 class User(BaseModel):
-    username : str
-    password : str
+    username : str = ''
+    password : str = ''
     reviews :  List[Review] = []
     friends : List[str] = []
 
@@ -49,23 +50,33 @@ class User(BaseModel):
 # login-section
 @app.post("/register")
 async def register(user: User):
+    if user.username=='' or user.password=='':
+        return {"Message": "username and password are required!"}
     existinguser = await collection.find_one({"username" : user.username})
     if existinguser:
-        return {"Error" : "User already exists with same username!"}
+        return {"Message" : "User already exists with same username!"}
     newuser = user.model_dump() #replacing dict with model_dump since dict is depreciated
     result = await collection.insert_one(newuser)
-    return {"Message": "User added successfully!"}
+    answer = result.inserted_id
+    answer = str(answer)
+    return {"Message": "User added successfully!", "userId" : answer}
 
 @app.post("/login")
 async def login(user: User):
+    if user.username=='' or user.password=='':
+        return {"Message": "username and password are required!"}
+    
     existinguser = await collection.find_one({"username": user.username})
     if not existinguser:
-        return {"Error":"User does not exists!"}
+        return {"Message":"User does not exists!"}
 
     if user.password != existinguser["password"]:
         return {"Message": "Wrong password entered!"}
     
-    return {"Message": "User logged in successfully!"}
+    result = existinguser["_id"]
+    result = str(result)
+    
+    return {"Message": "User logged in successfully!", "userId" : result}
     
 # review-album-section
 @app.post("/{id}/add-review/{albumId}")
@@ -74,6 +85,7 @@ async def add_review(id: str, review: Review):
     
     if not existinguser:
         return {"Error":"User does not exists!"}
+    print(f"Received data: {review}")
     newreview = review.model_dump()
     newreview["userId"] = id
     newreview["date"] = datetime.now(timezone.utc).isoformat()

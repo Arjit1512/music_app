@@ -1,25 +1,36 @@
-import { StyleSheet, Text, View, SafeAreaView, Image, StatusBar, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, SafeAreaView, Image, StatusBar, TouchableOpacity, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useFonts } from 'expo-font'
 import { router, useFocusEffect } from 'expo-router'
-
+import { FontAwesome, AntDesign } from '@expo/vector-icons';
+import Loader from '../../components/Loader'
 
 
 const Profile = () => {
     const [user, setUser] = useState({});
     const [ratings, setRatings] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const [isl, setIsl] = useState(false);
 
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
+        "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
     })
 
     useFocusEffect(
         React.useCallback(() => {
             const getData = async () => {
+                setLoading(true)
+                const isLoggedIn = JSON.parse(await AsyncStorage.getItem("isLoggedIn"));
+                setIsl(isLoggedIn);
+                if (!isLoggedIn) {
+                    return;
+                }
                 try {
-                    const userId = '67d016b58e54df15c0998421'
+                    const userId = await AsyncStorage.getItem("userId");
                     const response = await axios.get(`http://10.0.51.34:8000/get-details/${userId}`)
                     console.log(response.data);
                     AsyncStorage.setItem('userId', userId)
@@ -28,11 +39,15 @@ const Profile = () => {
                     console.log('Error: ', error);
                     alert(error);
                 }
+                finally {
+                    setLoading(false);
+                }
             }
 
             const getRatings = async () => {
+                setLoading(true)
                 try {
-                    const userId = '67d016b58e54df15c0998421'
+                    const userId = await AsyncStorage.getItem("userId");
                     const response = await axios.get(`http://10.0.51.34:8000/${userId}/reviews`)
                     console.log('Response: ', response.data);
                     setRatings(response.data || []);
@@ -47,14 +62,19 @@ const Profile = () => {
                             };
                         }))
 
-                        setRatings(albums.sort((a, b) => new Date(b.date) - new Date(a.date)));
+                    console.log('Current UserId: ',userId)
+                    setRatings(albums.sort((a, b) => new Date(b.date) - new Date(a.date)));
                 } catch (error) {
                     console.log('Error: ', error);
                     alert(error)
                 }
+                finally {
+                    setLoading(false);
+                }
             }
 
             const getAlbumsInfo = async (albumId) => {
+                setLoading(true)
                 const token = await AsyncStorage.getItem('token');
                 console.log('Album ID: ', albumId)
                 try {
@@ -68,37 +88,84 @@ const Profile = () => {
                 } catch (error) {
                     console.log('Error: ', error);
                 }
+                finally {
+                    setLoading(false);
+                }
             }
 
             getData();
             getRatings();
         }, [])
     );
-    console.log('User: ', user)
-    console.log('Ratings: ', ratings);
 
-    const navigateToSongs = async(albumId) => {
-        try{
+    const navigateToSongs = async (albumId) => {
+        try {
             router.push(`/${albumId}`);
-        }catch(error){
-            console.log('Error: ',error)
+        } catch (error) {
+            console.log('Error: ', error)
             alert(error);
         }
-    } 
+    }
 
+    const navigateToAll = async () => {
+        try {
+            router.push(`/allyourratings`);
+        } catch (error) {
+            console.log('Error: ', error)
+            alert(error);
+        }
+    }
+
+    const navigateToLogin = async () => {
+        try {
+            router.push('/login');
+        } catch (error) {
+            console.log('Error: ', error)
+            alert(error);
+        }
+    }
+
+
+    if (loading) {
+        return (
+            <Loader />
+        )
+    }
+
+
+    if (!isl) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <StatusBar barStyle="light-content" backgroundColor="#151515" />
+                <View style={styles.notdiv}>
+                    <Image source={require("../../assets/images/dp.png")} style={styles.notimg} />
+                    <Text style={styles.nottext}>Oops, you have not logged in, please login to have a better experience on the app!</Text>
+                    <TouchableOpacity style={styles.btn} onPress={navigateToLogin}>
+                        <Text style={styles.btntext}>Login</Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        )
+    }
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#151515" />
-
+            <View style={styles.threedots}>
+            <TouchableOpacity onPress={() => router.push("/more")}>
+                <AntDesign name="ellipsis1" size={24} color='white' />
+            </TouchableOpacity>
+            </View>
             <View style={styles.heading}>
                 <Text style={styles.h1}>{user?.username}</Text>
+
                 <Image source={require("../../assets/images/dp.png")} style={styles.img} />
             </View>
+
             <View style={styles.greybox}>
-                <View style={styles.flexcol}>
+                <TouchableOpacity style={styles.flexcol} onPress={navigateToAll}>
                     <Text style={styles.greytext}>{user?.reviews?.length}</Text>
                     <Text style={styles.greytext}>Reviews</Text>
-                </View>
+                </TouchableOpacity>
                 <View style={styles.flexcol}>
                     <Text style={styles.greytext}>{user?.friends?.length}</Text>
                     <Text style={styles.greytext}>Followers</Text>
@@ -107,10 +174,10 @@ const Profile = () => {
             <View style={styles.ratediv}>
                 <Text style={styles.ratetext}>Recently Rated Albums:</Text>
                 <View style={styles.ratingdiv}>
-                    {ratings?.slice(0,3).map((rating, index) => (
+                    {ratings?.slice(0, 3).map((rating, index) => (
                         <TouchableOpacity style={styles.singlediv} key={index} onPress={() => navigateToSongs(rating.album)}>
                             <Image style={styles.albumImg} source={{ uri: rating.dp }} />
-                            <Text style={styles.rtitle}>{rating.albumName?.length >10 ? `${rating.albumName.substr(0,10)}...` : rating.albumName}</Text>
+                            <Text style={styles.rtitle}>{rating.albumName?.length > 10 ? `${rating.albumName.substr(0, 10)}...` : rating.albumName}</Text>
                         </TouchableOpacity>
                     ))}
                 </View>
@@ -128,8 +195,11 @@ const styles = StyleSheet.create({
         display: "flex",
         alignItems: "center",
     },
-    heading: {
-        paddingTop: "3%"
+    threedots:{
+        position:"relative",
+        left:"40%",
+        top:"3.5%",
+        width:"max-content"
     },
     h1: {
         color: "#fff",
@@ -170,11 +240,12 @@ const styles = StyleSheet.create({
         position: "relative",
         top: "2%",
         width: "100%",
-        paddingTop:10
+        paddingTop: 10
     },
     ratetext: {
         color: "white",
         fontSize: 18,
+        marginLeft: "2%",
         textAlign: "left",
         fontWeight: "800",
         fontFamily: "OpenSans-Bold"
@@ -183,7 +254,7 @@ const styles = StyleSheet.create({
         display: "flex",
         flexWrap: "wrap",
         flexDirection: "row",
-        gap: 15,
+        gap: Platform.OS=='ios' ? 10 : 0,
         width: "100%",
         marginTop: "2%"
     },
@@ -194,17 +265,59 @@ const styles = StyleSheet.create({
         height: 140,
         width: 120,
         padding: 12,
-        alignItems:"center"
+        alignItems: "center"
     },
     rtitle: {
         color: "white",
         fontSize: 10,
-        marginTop:6,
-        fontFamily:"OpenSans-Bold"
+        marginTop: 6,
+        fontFamily: "OpenSans-Bold"
     },
     albumImg: {
         width: 90,
         height: 90,
-        borderRadius:8
-    }
+        borderRadius: 8,
+    },
+    notdiv: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%"
+    },
+    notimg: {
+        objectFit: "cover",
+        width: 80,
+        height: 80,
+        borderRadius: 100,
+        opacity: 0.6
+    },
+    nottext: {
+        color: "grey",
+        textAlign: "center",
+        fontSize: 14,
+        width: "75%",
+        marginTop: "5%",
+        fontFamily: "OpenSans"
+    },
+    btn: {
+        height: 50,
+        width: 140,
+        padding: 4,
+        textAlign: "center",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "white",
+        color: "white",
+        borderRadius: 10,
+        position: "relative",
+        top: 20
+    },
+    btntext: {
+        fontSize: 12,
+        color: "#",
+        fontFamily: "OpenSans-Bold",
+        fontWeight: "600"
+    },
 })

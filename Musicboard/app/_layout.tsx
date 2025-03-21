@@ -7,7 +7,10 @@ export default function RootLayout() {
       <Stack.Screen name="artist" options={{ headerShown: false }} />
       <Stack.Screen name="[albumId]" options={{ headerShown: false }} />
       <Stack.Screen name="rating" options={{ headerShown: false }} />
-    
+      <Stack.Screen name="allyourratings" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="register" options={{ headerShown: false }} />
+      <Stack.Screen name="more" options={{headerShown: false}} />
     </Stack>
   );
 }

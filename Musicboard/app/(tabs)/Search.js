@@ -4,6 +4,7 @@ import axios from 'axios';
 import { router, useFocusEffect } from 'expo-router';
 import { ChevronRight, Search } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Loader from '../../components/Loader'
 
 
 const SearchPage = () => {
@@ -17,7 +18,8 @@ const SearchPage = () => {
 
 
 
-  const token = 'BQAcmnOaLMQcUORpZriAKg5tGdxsgaSAPpAzRjAc1avg-7QPsTE9rAuLggiBgnIxVBMfotMQ_h9pCNjg_4Xh8yPmsZ95Z2Z9aTht6JJwKuOrP3z_VoojVGogiFIB1L5-5sPOxKX1m28';
+  const token = 'BQCDpGzL-WLjQVatNG9hkYWgt6o9DhLGfVhoMq0ijmQCnmJ8HznEO5bTx90gD6LFaODcQAPJ0Z3BBvLKsmHoFKqzm2sA0H5QhXJCMIrp5aQiHvapfiMBCBq9482GBmjaqrDeL1q6GMg';
+
 
   const getArtists = async () => {
     try {
@@ -113,8 +115,8 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     paddingBottom: "5%",
-    position:'relative',
-    left:"0%"
+    position: 'relative',
+    left: "0%"
   },
   bar: {
     borderWidth: 2,
@@ -157,7 +159,7 @@ const styles = StyleSheet.create({
   image: {
     width: 50,
     height: 50,
-    borderRadius: "100%",
+    borderRadius: 25,
     objectFit: "cover"
   },
   heading: {

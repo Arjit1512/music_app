@@ -3,8 +3,10 @@ import React, { useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
 import axios from 'axios';
+import { FontAwesome, AntDesign } from 'react-native-vector-icons';
 import { useFonts } from 'expo-font'
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Loader from '../../components/Loader'
 
 const { width } = Dimensions.get('window');
 
@@ -13,6 +15,7 @@ const artist = () => {
     const [albums, setAlbums] = useState([]);
     const [dp, setDp] = useState('');
     const [artist, setArtist] = useState([]);
+        const [loading,setLoading] = useState(false);
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
         "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
@@ -20,7 +23,9 @@ const artist = () => {
 
     useFocusEffect(
         React.useCallback(() => {
+
             const getData = async () => {
+                setLoading(true)
                 const artistId = await AsyncStorage.getItem('artistId');
                 const token = await AsyncStorage.getItem('token');
                 const dp = await AsyncStorage.getItem('dp');
@@ -43,10 +48,13 @@ const artist = () => {
                 } catch (error) {
                     console.log('Error: ', error)
                 }
+                finally{
+                    setLoading(false);
+                }
             }
 
             const getArtistData = async () => {
-
+                setLoading(true)
                 const artistId = await AsyncStorage.getItem('artistId');
                 const token = await AsyncStorage.getItem('token');
                 try {
@@ -63,6 +71,9 @@ const artist = () => {
                 } catch (error) {
                     console.log('Error: ', error)
                 }
+                finally{
+                    setLoading(false);
+                }
             }
 
             getData();
@@ -76,6 +87,7 @@ const artist = () => {
     }
 
     const navigateToSpotify = async () => {
+        setLoading(true)
         const artistId = await AsyncStorage.getItem('artistId');
         try {
             const url = `spotify:artist:${artistId}`;
@@ -83,15 +95,28 @@ const artist = () => {
         } catch (error) {
             console.log('Error: ', error)
         }
+        finally{
+            setLoading(false);
+        }
     }
     console.log('TITLE: ', artist.name);
 
+    if(loading){
+        return (
+            <Loader />
+        )
+    }
 
     return (
         <SafeAreaView style={styles.safeArea}>
             <ScrollView contentContainerStyle={styles.container}>
                 <StatusBar barStyle="light-content" backgroundColor="#151515" />
-                <Image style={styles.dp} source={{ uri: dp }} />
+                <View style={styles.back}>
+                                    <TouchableOpacity onPress={() => router.back()}>
+                                        <AntDesign style={styles.back} name="left" size={24} color="white" />
+                                    </TouchableOpacity>
+                                </View>
+                                <Image style={styles.dp} source={{ uri: dp }} />
                 <Text style={styles.an}>{artist.name}</Text>
                 <Text style={styles.ta}>Top Albums</Text>
                 <View style={styles.wholediv}>
@@ -137,10 +162,19 @@ const styles = StyleSheet.create({
         width: "100%",
         alignItems: "center",
     },
+    back:{
+        position:"absolute",
+        right:"85%",
+        top:"0.5%",
+        zIndex:10,
+        borderRadius:4,
+        height:34,
+        width:24
+    },
     dp: {
         width: 170,
         height: 170,
-        borderRadius: "100%",
+        borderRadius: 25,
         borderWidth: 2,
         borderColor: "grey"
     },
@@ -207,11 +241,14 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 12,
         marginVertical: 10,
+        width:"94%",
+        justifyContent:"center",
+        alignItems:"center"
     },
     title: {
         fontFamily: "OpenSans-Bold",
         textTransform: "uppercase",
-        fontSize: 20,
+        fontSize: 18,
         width: "100%",
         textAlign: "center"
     },
