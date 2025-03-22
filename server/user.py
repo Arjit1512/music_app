@@ -88,6 +88,7 @@ async def add_review(id: str, review: Review):
     print(f"Received data: {review}")
     newreview = review.model_dump()
     newreview["userId"] = id
+    newreview["username"] = existinguser["username"]
     newreview["date"] = datetime.now(timezone.utc).isoformat()
 
     result = await reviews.insert_one(newreview)
@@ -126,7 +127,12 @@ async def show_reviews(id:str):
         review["_id"] = str(review["_id"])  # Convert ObjectId to string
     return result
 
-
+@app.get("/reviews")
+async def get_reviews():
+    array = await reviews.find().sort("date", -1).to_list(10) # to find latest 10 reviews
+    for review in array:
+        review["_id"] = str(review["_id"])
+    return {"Message":"Reviews fecthed successfully!", "reviews": array}
 
 
 

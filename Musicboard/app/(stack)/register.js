@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#1DB954",
+        backgroundColor: "#FF6500",
         color: "white",
         borderRadius: 10,
         position: "relative",

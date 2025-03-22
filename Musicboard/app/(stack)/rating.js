@@ -75,7 +75,7 @@ const rating = () => {
                                 <FontAwesome
                                     name={rating >= item ? "star" : "star-o"}
                                     size={32}
-                                    color={rating >= item ? "#1DB954" : "grey"}
+                                    color={rating >= item ? "#FF6500" : "grey"}
                                 />
                             </TouchableOpacity>
                         ))}
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#1DB954",
+        backgroundColor: "#FF6500",
         color: "white",
         borderRadius: 10,
         position: "relative",

@@ -1,6 +1,7 @@
 import { StyleSheet, StatusBar, Text, TextInput, View, SafeAreaView, Image, ScrollView, TouchableOpacity } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios';
+import { useFonts } from 'expo-font';
 import { router, useFocusEffect } from 'expo-router';
 import { ChevronRight, Search } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,6 +10,7 @@ import Loader from '../../components/Loader'
 
 const SearchPage = () => {
   const [search, setSearch] = useState('');
+  const [option, setOption] = useState('tracks');
   const [searchPressed, setSearchPressed] = useState(false)
   const [artists, setArtists] = useState([{
     name: '',
@@ -17,29 +19,53 @@ const SearchPage = () => {
   }]);
 
 
-
-  const token = 'BQCDpGzL-WLjQVatNG9hkYWgt6o9DhLGfVhoMq0ijmQCnmJ8HznEO5bTx90gD6LFaODcQAPJ0Z3BBvLKsmHoFKqzm2sA0H5QhXJCMIrp5aQiHvapfiMBCBq9482GBmjaqrDeL1q6GMg';
+  let fontsLoaded = useFonts({
+    "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
+    "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
+  })
 
 
   const getArtists = async () => {
     try {
-      const response = await axios.get(`https://api.spotify.com/v1/search?q=${search}&type=artist`, {
+      const token = await AsyncStorage.getItem("token");
+      const response = await axios.get(`https://api.spotify.com/v1/search?q=${search}&type=artist,album,track`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      await AsyncStorage.setItem('token', token)
-      const artistsArray = response.data.artists?.items?.map((item) => ({
-        name: item.name,
-        id: item.id,
-        dp: item.images[0]?.url || null
-      })) || [];
-      setArtists(artistsArray)
+
+      let artistsArray = [];
+      if (option === 'artists') {
+        artistsArray = response.data.artists?.items?.map((item) => ({
+          name: item.name,
+          id: item.id,
+          dp: item.images[0]?.url || null
+        })) || [];
+      }
+      let tracksArray = [];
+      if (option === 'tracks') {
+        tracksArray = response.data.tracks?.items?.map((item) => ({
+          name: item.name,
+          id: item.id,
+          dp: item.album?.images[0]?.url || null
+        })) || [];
+      }
+      let albumsArray = [];
+      if (option === 'albums') {
+        albumsArray = response.data.albums?.items?.map((item) => ({
+          name: item.name,
+          id: item.id,
+          dp: item.images[0]?.url || null
+        })) || [];
+      }
+      const finalArray = [...tracksArray, ...albumsArray, ...artistsArray];
+      setArtists(finalArray)
     } catch (error) {
       console.log('Error: ', error)
     }
   }
-  const handleChange = () => {
+  const handleChange = async () => {
+    const token = await AsyncStorage.getItem("token");
     if (token) getArtists();
   }
 
@@ -50,18 +76,53 @@ const SearchPage = () => {
     router.push("/artist");
   }
 
+  const handleClick = async (message) => {
+    try {
+      setOption(message)
+    } catch (error) {
+      console.log('Error: ', error);
+      alert(error)
+    }
+  }
+
+  useEffect(() => {
+    handleChange();
+  }, [option])
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <StatusBar barStyle="light-content" backgroundColor="#151515" />
-        <View style={styles.searchdiv} onChange={handleChange}>
+        <View style={searchPressed ? styles.sdiv : styles.searchdiv} onChange={handleChange}>
           <TextInput style={styles.bar} onPress={() => setSearchPressed(true)} onChangeText={(text) => setSearch(text)} value={search} placeholder=' search' placeholderTextColor='#888'></TextInput>
           {searchPressed && (
-            <Text style={styles.cancel} onPress={() => { setSearchPressed(false), setSearch('') }} >cancel</Text>
+            <View style={styles.cancel} >
+              <Text style={{ color: "grey" }} onPress={() => { setSearchPressed(false), setSearch('') }} >cancel</Text>
+            </View>
           )}
         </View>
         <View>
+          {searchPressed && (
+            <View style={styles.div}>
+              <TouchableOpacity onPress={() => handleClick('tracks')}>
+                <View style={[styles.bxContainer, option === 'tracks' && styles.active]}>
+                  <Text style={styles.bx}>Tracks</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => handleClick('albums')}>
+                <View style={[styles.bxContainer, option === 'albums' && styles.active]}>
+                  <Text style={styles.bx}>Albums</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => handleClick('artists')}>
+                <View style={[styles.bxContainer, option === 'artists' && styles.active]}>
+                  <Text style={styles.bx}>Artists</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
           {(searchPressed && artists.length > 1) ? (artists?.map((item, index) => {
             return (
               <View style={styles.flexcol} key={index}>
@@ -116,21 +177,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingBottom: "5%",
     position: 'relative',
-    left: "0%"
+    left: "1%"
+  },
+  sdiv: {
+    display: "flex",
+    flexDirection: "row",
+    paddingBottom: "5%",
+    position: 'relative',
+    left: "1%"
   },
   bar: {
     borderWidth: 2,
     borderColor: "grey",
     color: 'white',
-    width: "83%",
+    width: 310,
     backgroundColor: "black",
-    height: "135%",
+    height: 30,
     borderRadius: 10
   },
   cancel: {
-    color: "grey",
-    marginLeft: "3%",
-    marginTop: "1%"
+    marginLeft: 5,
+    marginTop: 5
   },
   icon: {
     marginRight: "5%"
@@ -183,5 +250,31 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 20,
     marginTop: "5%"
+  },
+  //search filters
+  div: {
+    display: "flex",
+    flexDirection: "row",
+    backgroundColor: "",
+    position: 'relative',
+    height: 25,
+    bottom: 10,
+    zIndex: 100,
+    alignItems: "center",
+    justifyContent: 'center',
+    width: "100%",
+    gap: 100
+  },
+  bxContainer: {
+    paddingBottom: 5,
+  },
+  bx: {
+    color: "white",
+    width: "100%",
+    textAlign: "center",
+  },
+  active: {
+    borderBottomWidth: 3,
+    borderBottomColor: "#FF6500",
   }
 })

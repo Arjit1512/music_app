@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, ScrollView, SafeAreaView, StatusBar, Image, Tou
 import React, { useState } from 'react'
 import { FontAwesome, AntDesign } from 'react-native-vector-icons';
 import axios from 'axios'
+import { useFonts } from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router, useFocusEffect } from 'expo-router'
 import Loader from '../../components/Loader'
@@ -9,7 +10,11 @@ import Loader from '../../components/Loader'
 const allyourratings = () => {
 
     const [ratings, setRatings] = useState([]);
-        const [loading,setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+    let fontsLoaded = useFonts({
+        "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
+        "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
+    })
 
     useFocusEffect(
         React.useCallback(() => {
@@ -31,7 +36,7 @@ const allyourratings = () => {
                     console.log('Error: ', error)
                     alert(error);
                 }
-                finally{
+                finally {
                     setLoading(false);
                 }
             }
@@ -41,7 +46,7 @@ const allyourratings = () => {
         }, [])
     )
     console.log('RATINGS: ', ratings);
-    if(loading){
+    if (loading) {
         return (
             <Loader />
         )
@@ -91,11 +96,11 @@ const styles = StyleSheet.create({
         width: "100%",
         padding: 10,
     },
-    back:{
-        position:"absolute",
-        left:"2%",
-        top:"2.3%",
-        zIndex:10
+    back: {
+        position: "absolute",
+        left: "2%",
+        top: "2.3%",
+        zIndex: 10
     },
     ta: {
         color: "white",

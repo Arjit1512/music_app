@@ -125,6 +125,8 @@ const Profile = () => {
         }
     }
 
+    console.log('RATINGS: ',ratings)
+
 
     if (loading) {
         return (

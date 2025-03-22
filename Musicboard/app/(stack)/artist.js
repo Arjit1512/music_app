@@ -15,7 +15,7 @@ const artist = () => {
     const [albums, setAlbums] = useState([]);
     const [dp, setDp] = useState('');
     const [artist, setArtist] = useState([]);
-        const [loading,setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
         "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
@@ -48,7 +48,7 @@ const artist = () => {
                 } catch (error) {
                     console.log('Error: ', error)
                 }
-                finally{
+                finally {
                     setLoading(false);
                 }
             }
@@ -71,7 +71,7 @@ const artist = () => {
                 } catch (error) {
                     console.log('Error: ', error)
                 }
-                finally{
+                finally {
                     setLoading(false);
                 }
             }
@@ -95,13 +95,13 @@ const artist = () => {
         } catch (error) {
             console.log('Error: ', error)
         }
-        finally{
+        finally {
             setLoading(false);
         }
     }
     console.log('TITLE: ', artist.name);
 
-    if(loading){
+    if (loading) {
         return (
             <Loader />
         )
@@ -112,11 +112,11 @@ const artist = () => {
             <ScrollView contentContainerStyle={styles.container}>
                 <StatusBar barStyle="light-content" backgroundColor="#151515" />
                 <View style={styles.back}>
-                                    <TouchableOpacity onPress={() => router.back()}>
-                                        <AntDesign style={styles.back} name="left" size={24} color="white" />
-                                    </TouchableOpacity>
-                                </View>
-                                <Image style={styles.dp} source={{ uri: dp }} />
+                    <TouchableOpacity onPress={() => router.back()}>
+                        <AntDesign style={styles.back} name="left" size={24} color="white" />
+                    </TouchableOpacity>
+                </View>
+                <Image style={styles.dp} source={{ uri: dp }} />
                 <Text style={styles.an}>{artist.name}</Text>
                 <Text style={styles.ta}>Top Albums</Text>
                 <View style={styles.wholediv}>
@@ -162,32 +162,32 @@ const styles = StyleSheet.create({
         width: "100%",
         alignItems: "center",
     },
-    back:{
-        position:"absolute",
-        right:"85%",
-        top:"0.5%",
-        zIndex:10,
-        borderRadius:4,
-        height:34,
-        width:24
+    back: {
+        position: "absolute",
+        right: "85%",
+        top: "0.5%",
+        zIndex: 10,
+        borderRadius: 4,
+        height: 34,
+        width: 24
     },
     dp: {
         width: 170,
         height: 170,
-        borderRadius: 25,
+        borderRadius: 100,
         borderWidth: 2,
         borderColor: "grey"
     },
     ta: {
-        color: "#1DB954",
+        color: "#FF6500",
         textTransform: "uppercase",
         fontFamily: 'OpenSans-Bold',
         textAlign: "left",
         fontSize: 26,
         position: 'relative',
         top: 10,
-        left:5,
-        width:"100%"
+        left: 5,
+        width: "100%"
     },
     an: {
         color: "white",
@@ -237,25 +237,27 @@ const styles = StyleSheet.create({
         bottom: 5
     },
     artistdiv: {
-        backgroundColor: '#1DB954',
+        backgroundColor: '#FF6500',
         padding: 16,
         borderRadius: 12,
         marginVertical: 10,
-        width:"94%",
-        justifyContent:"center",
-        alignItems:"center"
+        width: "94%",
+        alignSelf: "center",
+        justifyContent: "center",
+        alignItems: "center"
     },
     title: {
         fontFamily: "OpenSans-Bold",
         textTransform: "uppercase",
         fontSize: 18,
+        color:"#E2DFD0",
         width: "100%",
         textAlign: "center"
     },
     artistName: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#3F7D58',
+        color: '#',
         marginBottom: 6,
         fontFamily: "Opensans"
     },
