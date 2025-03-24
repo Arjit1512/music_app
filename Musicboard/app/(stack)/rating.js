@@ -32,8 +32,9 @@ const rating = () => {
                 return;
             }
             const response = await axios.post(`http://10.0.51.34:8000/${userId}/add-review/${albumId}`, {
-                album: albumId,
-                albumImg: albumDp,
+                spotifyId: albumId,
+                img: albumDp,
+                type:'album',
                 stars: rating,
                 comment: comment || ''
             })

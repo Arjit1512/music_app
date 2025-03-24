@@ -1,11 +1,12 @@
 import { StyleSheet, StatusBar, Text, TextInput, View, SafeAreaView, Image, ScrollView, TouchableOpacity } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import axios from 'axios';
 import { useFonts } from 'expo-font';
 import { router, useFocusEffect } from 'expo-router';
-import { ChevronRight, Search } from 'lucide-react-native';
+import { ChevronRight, FileArchive, Search } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loader from '../../components/Loader'
+import { debounce } from 'lodash';
 
 
 const SearchPage = () => {
@@ -13,6 +14,16 @@ const SearchPage = () => {
   const [option, setOption] = useState('tracks');
   const [searchPressed, setSearchPressed] = useState(false)
   const [artists, setArtists] = useState([{
+    name: '',
+    dp: '',
+    id: ''
+  }]);
+  const [tracks, setTracks] = useState([{
+    name: '',
+    dp: '',
+    id: ''
+  }]);
+  const [albums, setAlbums] = useState([{
     name: '',
     dp: '',
     id: ''
@@ -28,6 +39,8 @@ const SearchPage = () => {
   const getArtists = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
+      console.log('Token for searching is: ',token);
+      if (!search || !token) return;
       const response = await axios.get(`https://api.spotify.com/v1/search?q=${search}&type=artist,album,track`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -58,23 +71,57 @@ const SearchPage = () => {
           dp: item.images[0]?.url || null
         })) || [];
       }
-      const finalArray = [...tracksArray, ...albumsArray, ...artistsArray];
-      setArtists(finalArray)
+      setTracks(tracksArray)
+      setAlbums(albumsArray)
+      setArtists(artistsArray)
     } catch (error) {
       console.log('Error: ', error)
     }
   }
+
+  // 🔥 Debounced API Call
+  const getArtistsDebounced = useCallback(
+    debounce(() => {
+      console.log("Fetching artists for:", search);
+      getArtists();
+    }, 300),
+    [search] // Dependency array ensures proper debouncing
+  );
+
+  useEffect(() => {
+    if (search.length > 0) {
+      getArtistsDebounced();
+    }
+    return () => getArtistsDebounced.cancel(); // Cleanup
+  }, [search]);
+
+
   const handleChange = async () => {
-    const token = await AsyncStorage.getItem("token");
-    if (token) getArtists();
+    getArtists();
   }
 
   const handlePress = async (artistId, dp) => {
     await AsyncStorage.setItem('artistId', artistId)
+    console.log('Navigating to artist: ', artistId);
     await AsyncStorage.setItem('dp', dp)
-
     router.push("/artist");
+
   }
+
+  const handlePressSong = async (songId, dp) => {
+    await AsyncStorage.setItem('songId', songId)
+    console.log('Navigating to song: ', songId);
+    await AsyncStorage.setItem('dp', dp)
+    router.push(`/song/${songId}`);
+  }
+
+  const handlePressAlbum = async (albumId) => {
+    await AsyncStorage.setItem('albumId', albumId)
+    console.log('Navigating to album', albumId);
+    router.push(`album/${albumId}`);
+  }
+
+
 
   const handleClick = async (message) => {
     try {
@@ -94,7 +141,8 @@ const SearchPage = () => {
       <ScrollView>
         <StatusBar barStyle="light-content" backgroundColor="#151515" />
         <View style={searchPressed ? styles.sdiv : styles.searchdiv} onChange={handleChange}>
-          <TextInput style={styles.bar} onPress={() => setSearchPressed(true)} onChangeText={(text) => setSearch(text)} value={search} placeholder=' search' placeholderTextColor='#888'></TextInput>
+          <TextInput style={styles.bar} onPress={() => setSearchPressed(true)}
+            onChangeText={async (text) => { setSearch(text) }} value={search} placeholder=' search' placeholderTextColor='#888'></TextInput>
           {searchPressed && (
             <View style={styles.cancel} >
               <Text style={{ color: "grey" }} onPress={() => { setSearchPressed(false), setSearch('') }} >cancel</Text>
@@ -123,13 +171,35 @@ const SearchPage = () => {
               </TouchableOpacity>
             </View>
           )}
-          {(searchPressed && artists.length > 1) ? (artists?.map((item, index) => {
+          {(searchPressed && tracks.length > 1) && (tracks?.map((item, index) => {
+            return (
+              <View style={styles.flexcol} key={index}>
+                <TouchableOpacity style={styles.row} onPress={() => handlePressSong(item.id, item.dp)}>
+                  <Image source={{ uri: item.dp }} style={styles.image} />
+                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+                  <ChevronRight size={20} color="orange" />
+                </TouchableOpacity>
+              </View>
+            )
+          }))}
+          {(searchPressed && albums.length > 1) && (albums?.map((item, index) => {
+            return (
+              <View style={styles.flexcol} key={index}>
+                <TouchableOpacity style={styles.row} onPress={() => handlePressAlbum(item.id, item.dp)}>
+                  <Image source={{ uri: item.dp }} style={styles.image} />
+                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+                  <ChevronRight size={20} color="orange" />
+                </TouchableOpacity>
+              </View>
+            )
+          }))}
+          {(searchPressed) ? (artists?.map((item, index) => {
             return (
               <View style={styles.flexcol} key={index}>
                 <TouchableOpacity style={styles.row} onPress={() => handlePress(item.id, item.dp)}>
                   <Image source={{ uri: item.dp }} style={styles.image} />
-                  <Text style={styles.result}>{item.name}</Text>
-                  <ChevronRight size={20} color="white" />
+                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+                  <ChevronRight size={20} color="orange" />
                 </TouchableOpacity>
               </View>
             )

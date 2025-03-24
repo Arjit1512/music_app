@@ -33,8 +33,9 @@ collection = db["users"]
 reviews = db["reviews"]
 
 class Review(BaseModel):
-    album : str  
-    albumImg : str 
+    type: str 
+    spotifyId : str  
+    img : str 
     stars: int
     comment : str  
     date: str | None = None
@@ -129,7 +130,7 @@ async def show_reviews(id:str):
 
 @app.get("/reviews")
 async def get_reviews():
-    array = await reviews.find().sort("date", -1).to_list(10) # to find latest 10 reviews
+    array = await reviews.find().sort("date", -1).to_list(20) # to find latest 10 reviews
     for review in array:
         review["_id"] = str(review["_id"])
     return {"Message":"Reviews fecthed successfully!", "reviews": array}

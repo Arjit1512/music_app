@@ -64,7 +64,7 @@ const allyourratings = () => {
                 {ratings.map((item, index) => {
                     return (
                         <View style={styles.each} key={index}>
-                            <Image style={styles.dp} source={{ uri: item.albumImg }}></Image>
+                            <Image style={styles.dp} source={{ uri: item.img }}></Image>
                             <View style={styles.col} key={index}>
                                 <View style={styles.stars}>
                                     {[...Array(5)].map((_, i) => (

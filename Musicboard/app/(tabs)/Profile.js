@@ -32,7 +32,7 @@ const Profile = () => {
                 try {
                     const userId = await AsyncStorage.getItem("userId");
                     const response = await axios.get(`http://10.0.51.34:8000/get-details/${userId}`)
-                    console.log(response.data);
+                    
                     AsyncStorage.setItem('userId', userId)
                     setUser(response.data.Message);
                 } catch (error) {
@@ -49,12 +49,12 @@ const Profile = () => {
                 try {
                     const userId = await AsyncStorage.getItem("userId");
                     const response = await axios.get(`http://10.0.51.34:8000/${userId}/reviews`)
-                    console.log('Response: ', response.data);
+                    //console.log('Response: ', response.data);
                     setRatings(response.data || []);
                     // Use Promise.all to resolve all album requests in parallel
                     const albums = await Promise.all(
                         response.data.map(async (item) => {
-                            const albumData = await getAlbumsInfo(item.album);
+                            const albumData = await getAlbumsInfo(item.spotifyId);
                             return {
                                 ...item,
                                 dp: albumData?.images[0]?.url || '',
@@ -62,7 +62,6 @@ const Profile = () => {
                             };
                         }))
 
-                    console.log('Current UserId: ',userId)
                     setRatings(albums.sort((a, b) => new Date(b.date) - new Date(a.date)));
                 } catch (error) {
                     console.log('Error: ', error);
@@ -100,7 +99,7 @@ const Profile = () => {
 
     const navigateToSongs = async (albumId) => {
         try {
-            router.push(`/${albumId}`);
+            router.push(`album/${albumId}`);
         } catch (error) {
             console.log('Error: ', error)
             alert(error);
@@ -124,9 +123,6 @@ const Profile = () => {
             alert(error);
         }
     }
-
-    console.log('RATINGS: ',ratings)
-
 
     if (loading) {
         return (
@@ -153,9 +149,9 @@ const Profile = () => {
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="#151515" />
             <View style={styles.threedots}>
-            <TouchableOpacity onPress={() => router.push("/more")}>
-                <AntDesign name="ellipsis1" size={24} color='white' />
-            </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push("/more")}>
+                    <AntDesign name="ellipsis1" size={24} color='white' />
+                </TouchableOpacity>
             </View>
             <View style={styles.heading}>
                 <Text style={styles.h1}>{user?.username}</Text>
@@ -166,7 +162,7 @@ const Profile = () => {
             <View style={styles.greybox}>
                 <TouchableOpacity style={styles.flexcol} onPress={navigateToAll}>
                     <Text style={styles.greytext}>{user?.reviews?.length}</Text>
-                    <Text style={styles.greytext}>Reviews</Text>
+                    <Text style={styles.greytext}>Ratings</Text>
                 </TouchableOpacity>
                 <View style={styles.flexcol}>
                     <Text style={styles.greytext}>{user?.friends?.length}</Text>
@@ -177,7 +173,7 @@ const Profile = () => {
                 <Text style={styles.ratetext}>Recently Rated Albums:</Text>
                 <View style={styles.ratingdiv}>
                     {ratings?.slice(0, 3).map((rating, index) => (
-                        <TouchableOpacity style={styles.singlediv} key={index} onPress={() => navigateToSongs(rating.album)}>
+                        <TouchableOpacity style={styles.singlediv} key={index} onPress={() => navigateToSongs(rating.spotifyId)}>
                             <Image style={styles.albumImg} source={{ uri: rating.dp }} />
                             <Text style={styles.rtitle}>{rating.albumName?.length > 10 ? `${rating.albumName.substr(0, 10)}...` : rating.albumName}</Text>
                         </TouchableOpacity>
@@ -197,11 +193,11 @@ const styles = StyleSheet.create({
         display: "flex",
         alignItems: "center",
     },
-    threedots:{
-        position:"relative",
-        left:"40%",
-        top:"3.5%",
-        width:"max-content"
+    threedots: {
+        position: "relative",
+        left: "40%",
+        top: "3.5%",
+        width: "max-content"
     },
     h1: {
         color: "#fff",
@@ -256,7 +252,7 @@ const styles = StyleSheet.create({
         display: "flex",
         flexWrap: "wrap",
         flexDirection: "row",
-        gap: Platform.OS=='ios' ? 10 : 0,
+        gap: Platform.OS == 'ios' ? 10 : 0,
         width: "100%",
         marginTop: "2%"
     },

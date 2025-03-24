@@ -6,21 +6,24 @@ import { useFonts } from 'expo-font';
 import { BlurView } from 'expo-blur';
 import { FontAwesome, AntDesign } from 'react-native-vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import Loader from '../../components/Loader'
+import Loader from '../../../components/Loader'
 import { Linking } from 'react-native';
+import { Entypo } from '@expo/vector-icons';
 
 const Songs = () => {
     const { albumId } = useLocalSearchParams();
     const [songs, setSongs] = useState([]);
+    const [rating, setRating] = useState(0);
+    const [no, setNo] = useState(0);
     const [albumInfo, setAlbumInfo] = useState({});
     const [loading, setLoading] = useState(false);
     const [popup, setPopup] = useState(false);
     const [song, setSong] = useState({});
 
     let fontsLoaded = useFonts({
-        "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
-        "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
-        "OpenSans-Italic": require("../../assets/fonts/OpenSans-Italic.ttf"),
+        "OpenSans": require("../../../assets/fonts/OpenSans-Regular.ttf"),
+        "OpenSans-Bold": require("../../../assets/fonts/OpenSans-Bold.ttf"),
+        "OpenSans-Italic": require("../../../assets/fonts/OpenSans-Italic.ttf"),
     })
 
     useFocusEffect(
@@ -51,6 +54,9 @@ const Songs = () => {
                         rd: response.data.release_date
                     });
 
+                    const ans = await getavgRatingAlbum()
+                    setRating(ans.avg);
+                    setNo(ans.no);
 
                 } catch (error) {
                     console.log('Error: ', error);
@@ -78,7 +84,25 @@ const Songs = () => {
         }
     }
 
-    console.log('Song: ', song)
+    const getavgRatingAlbum = async () => {
+        try {
+            const response = await axios.get(`http://10.0.51.34:8000/reviews`);
+
+            const filteredArray = response.data.reviews.filter((item) => item.spotifyId === albumId & item.type==='album');
+            if (filteredArray.length === 0) return 0;
+            const sum = filteredArray.reduce((acc, item) => acc + item.stars, 0);
+
+            const obj = {
+                avg: parseFloat(sum / filteredArray.length).toFixed(2),
+                no: filteredArray.length
+            }
+            return obj;
+        } catch (error) {
+            console.log('Error: ', error)
+            alert(error)
+            return 0;
+        }
+    }
 
     const openPopup = async (songId) => {
         setLoading(true)
@@ -94,6 +118,7 @@ const Songs = () => {
             })
             const object = {
                 name: response.data.name,
+                id: response.data.id,
                 duration: parseFloat(response.data.duration_ms / 60000).toFixed(2),
                 artistName: response.data.artists[0].name,
                 link: response.data.uri,
@@ -149,12 +174,19 @@ const Songs = () => {
                                 <Text style={styles.songText}>Name: <Text style={styles.span}> {song.name}</Text></Text>
                                 <Text style={styles.songText}>Duration: <Text style={styles.span}> {song.duration}min</Text></Text>
                                 <Text style={styles.songText}>Artist: <Text style={styles.span}> {song.artistName}</Text></Text>
-                                <TouchableOpacity style={styles.btn2} onPress={() => navigateTo(song.link)}>
-                                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                        <Text style={styles.btntext2}>Listen on Spotify</Text>
-                                        <FontAwesome name="spotify" size={24} style={{ marginLeft: 6 }} />
-                                    </View>
-                                </TouchableOpacity>
+                                <View style={styles.samerow}>
+                                    {/* <TouchableOpacity style={styles.btn2} onPress={() => navigateTo(song.link)}>
+                                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                            <Text style={styles.btntext2}>Listen on Spotify</Text>
+                                            <FontAwesome name="spotify" size={24} style={{ marginLeft: 6 }} />
+                                        </View>
+                                    </TouchableOpacity> */}
+                                    <TouchableOpacity style={styles.btn22} onPress={() => router.push(`song/${song.id}`)}>
+                                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                            <Text style={styles.btntext2}>Rate Song</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
 
                         </View>
@@ -167,16 +199,31 @@ const Songs = () => {
                 <TouchableOpacity style={styles.btn} onPress={handlePress}>
                     <Text style={styles.btntext}>Rate Album</Text>
                 </TouchableOpacity>
-                <View>
-                    <View>
-
+                {(no > 0) ? (
+                    <View style={styles.rdiv}>
+                        <View style={styles.rinsidediv}>
+                            <Entypo name='star' size={24} color='gold' />
+                            <Text style={styles.rtext}>Total Ratings: {no}</Text>
+                        </View>
+                        <View style={styles.rinsidediv}>
+                            <Entypo name='star' size={24} color='gold' />
+                            <Text style={styles.rtext}>Rating: {rating}/5</Text>
+                        </View>
                     </View>
-                </View>
+                ) : (
+                    <View style={styles.ndiv}>
+                        <Text style={styles.nrtext}>No one has rated this album yet.</Text>
+                        <Text style={styles.nrtext}>Be the first one to rate.
+                            {/* <Text onPress={handlePress} style={styles.spanr}>Rate Now</Text> */}
+                        </Text>
+                    </View>
+                )}
+
                 <View style={styles.col}>
                     <Text style={styles.tr}>Tracks</Text>
                     {songs.map((song, index) => {
                         return (
-                            <TouchableOpacity key={index} style={styles.eachcol} onPress={() => openPopup(song.id)}>
+                            <TouchableOpacity key={index} style={styles.eachcol} onPress={() => router.push(`song/${song.id}`)}>
                                 <Text style={styles.result}>{index + 1}. {song.name}</Text>
                                 <Text style={styles.no}>{song.singer}</Text>
                             </TouchableOpacity>
@@ -287,12 +334,14 @@ const styles = StyleSheet.create({
     no: {
         color: "grey",
         fontSize: 12,
+        marginLeft: 5
     },
     result: {
         color: 'white',
         fontSize: 14,
         padding: 5,
     },
+    // popup section
     fullScreenContainer: {
         position: "absolute",
         top: 0,
@@ -322,6 +371,13 @@ const styles = StyleSheet.create({
         position: "absolute",
         top: 180,
         left: 20,
+    },
+    samerow: {
+        display: "flex",
+        flexDirection: "row",
+        gap: 10,
+        alignItems:"center",
+        alignSelf:"center"
     },
     ta2: {
         color: "white",
@@ -354,6 +410,8 @@ const styles = StyleSheet.create({
         width: "94%",
         alignSelf: "center",
         borderRadius: 6,
+        borderColor:"#FF6500",
+        borderWidth:0,
         marginTop: 12,
         padding: 12
     },
@@ -364,7 +422,20 @@ const styles = StyleSheet.create({
     },
     btn2: {
         height: 50,
-        width: 150,
+        width: 145,
+        padding: 4,
+        textAlign: "center",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#1DB954",
+        color: "white",
+        borderRadius: 10,
+        marginTop: "4%",
+        alignSelf: "center"
+    },
+    btn22: {
+        height: 50,
+        width: 145,
         padding: 4,
         textAlign: "center",
         alignItems: "center",
@@ -373,8 +444,6 @@ const styles = StyleSheet.create({
         color: "white",
         borderRadius: 10,
         marginTop: "4%",
-        borderColor: "black",
-        borderWidth: 1,
         alignSelf: "center"
     },
     span: {
@@ -389,5 +458,52 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         position: "relative",
         bottom: 0
+    },
+    // rating section
+    rdiv: {
+        backgroundColor: "transparent",
+        height: 50,
+        marginTop: 12,
+        width: "94%",
+        borderRadius: 12,
+        alignSelf: "center",
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 33
+    },
+    rinsidediv: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    rtext: {
+        color: "grey",
+        fontSize: 13,
+        fontFamily: "OpenSans"
+    },
+    ndiv: {
+        backgroundColor: "#0B192C",
+        height: 50,
+        marginTop: 12,
+        width: "94%",
+        borderRadius: 12,
+        alignSelf: "center",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    spanr: {
+        fontWeight: "800",
+        textDecorationLine: "underline",
+        fontFamily: "OpenSans-Bold"
+    },
+    nrtext: {
+        color: "grey",
+        fontSize: 13,
+        fontFamily: "OpenSans-Italic"
     }
 })

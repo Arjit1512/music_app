@@ -26,7 +26,7 @@ const Home = () => {
 
                     const updatedReviews = await Promise.all(
                         reviews.map(async (review) => {
-                            const answer = await getAlbumInfo(review.album);
+                            const answer = await getAlbumInfo(review.spotifyId);
                             return {
                                 ...review,
                                 artistName: answer.artistName,
@@ -46,10 +46,11 @@ const Home = () => {
 
             const getAlbumInfo = async (albumId) => {
                 setLoading(true)
-                const token = 'BQA6hdMwN82HgwHBP1KPR143ZlA-JKi75qtOqdZpojpEtrfvSaorSHssIArdF8Zmp8Wu2u4VLc9wTJ6o8v499nsiloOqYyLPHfSqJRaYpHFtgdVSyTVZlE3CmLxlR1LmeMBkQlADfKM'
+                const token = 'BQD7uDEV89SiZgycSsLpyYeveyIeqJca3jtdmtU348iJL1sgJ_pcV-1IJTWY6uCJYYQi_ijkrEjWK7XzGEHweQEc6P2SUkyv2fo8zgczBfgh4A_p_NflGzpTtwYfPCPAez4ptRu7l0M';
 
-                
                 await AsyncStorage.setItem('token', token)
+
+                console.log('Token in home page: ',token)
 
                 try {
                     if (!token) return { name: "", rd: "", artistName: "" };
@@ -76,7 +77,6 @@ const Home = () => {
         }, [])
     )
 
-    console.log('FEED: ', feed);
 
     if (loading) {
         return (
@@ -95,7 +95,7 @@ const Home = () => {
                         return (
                             <View style={styles.each} key={index}>
                                 <View style={styles.whitediv}>
-                                    <Image style={styles.dp} source={{ uri: item.albumImg }}></Image>
+                                    <Image style={styles.dp} source={{ uri: item.img }}></Image>
                                     <View style={styles.whitecoldiv}>
                                         <Text style={styles.resultb}>{item.albumName}</Text>
                                         <Text style={styles.p}>{item.artistName} • Album</Text>

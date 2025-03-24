@@ -83,7 +83,7 @@ const artist = () => {
     const handlePress = async (albumId) => {
         await AsyncStorage.setItem('albumId', albumId)
         console.log('Navigating to ', albumId);
-        router.push(`/${albumId}`);
+        router.push(`album/${albumId}`);
     }
 
     const navigateToSpotify = async () => {
