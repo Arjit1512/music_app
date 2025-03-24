@@ -2,7 +2,7 @@ import { StyleSheet, StatusBar, Text, TextInput, View, SafeAreaView, Image, Scro
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import { useFonts } from 'expo-font';
-import { FontAwesome, AntDesign } from 'react-native-vector-icons';
+import { FontAwesome, AntDesign, Entypo } from 'react-native-vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { ChevronRight, Search } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -45,6 +45,7 @@ const Track = () => {
 
                     setSong({
                         name: response.data.name,
+                        id:response.data.id,
                         duration: parseFloat(response.data.duration_ms / 60000).toFixed(2),
                         pop: parseInt(response.data.popularity),
                         artistName: response.data.artists[0].name,
@@ -54,6 +55,7 @@ const Track = () => {
                     })
 
                     const ans = await getavgRatingSong()
+                    console.log('answer: ',ans)
                     setRating(ans.avg);
                     setNo(ans.no);
 
@@ -102,6 +104,22 @@ const Track = () => {
     }
 
 
+    const handlePress = async () => {
+        setLoading(true)
+        try {
+            await AsyncStorage.setItem('songId', songId);
+            await AsyncStorage.setItem('albumDp', song.img)
+            await AsyncStorage.setItem('type', 'track')
+            router.push("/rating");
+        } catch (error) {
+            console.log('Error: ', error)
+        }
+        finally {
+            setLoading(false);
+        }
+    }
+
+
     console.log('SONG: ', song)
 
     if (loading) {
@@ -122,17 +140,17 @@ const Track = () => {
                     <Text style={styles.ta2}>Song Info </Text>
 
                     <Image style={styles.dp2} source={{ uri: song?.img }} />
-                    <TouchableOpacity style={styles.btn}>
+                    <TouchableOpacity style={styles.btn} onPress={handlePress}>
                         <Text style={styles.btntext}>Rate Song</Text>
                     </TouchableOpacity>
                     {(no > 0) ? (
                         <View style={styles.rdiv}>
                             <View style={styles.rinsidediv}>
-                                <Entypo name='star' size={24} color='gold' />
+                                <Entypo name='star-outlined' size={24} color='#1DB954' />
                                 <Text style={styles.rtext}>Total Ratings: {no}</Text>
                             </View>
                             <View style={styles.rinsidediv}>
-                                <Entypo name='star' size={24} color='gold' />
+                                <Entypo name='star-outlined' size={24} color='#1DB954' />
                                 <Text style={styles.rtext}>Rating: {rating}/5</Text>
                             </View>
                         </View>
@@ -180,9 +198,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    movediv:{
-        position:"relative",
-        bottom:30
+    movediv: {
+        position: "relative",
+        bottom: 30
     },
     btn: {
         height: 50,
@@ -197,7 +215,7 @@ const styles = StyleSheet.create({
         borderRadius: 25,
     },
     btntext: {
-        fontSize: 14,
+        fontSize: 12,
         color: "#FFFFFF",
         fontFamily: "OpenSans-Bold",
         fontWeight: "700",

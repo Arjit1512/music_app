@@ -75,6 +75,7 @@ const Songs = () => {
         try {
             await AsyncStorage.setItem('albumId', albumId);
             await AsyncStorage.setItem('albumDp', albumInfo.dp)
+            await AsyncStorage.setItem('type', 'album')
             router.push("/rating");
         } catch (error) {
             console.log('Error: ', error)
@@ -202,11 +203,11 @@ const Songs = () => {
                 {(no > 0) ? (
                     <View style={styles.rdiv}>
                         <View style={styles.rinsidediv}>
-                            <Entypo name='star' size={24} color='gold' />
+                            <Entypo name='star-outlined' size={24} color='#FF6500' />
                             <Text style={styles.rtext}>Total Ratings: {no}</Text>
                         </View>
                         <View style={styles.rinsidediv}>
-                            <Entypo name='star' size={24} color='gold' />
+                            <Entypo name='star-outlined' size={24} color='#FF6500' />
                             <Text style={styles.rtext}>Rating: {rating}/5</Text>
                         </View>
                     </View>
@@ -260,12 +261,12 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         backgroundColor: "#FF6500",
         color: "white",
-        borderRadius: 10,
+        borderRadius: 25,
         marginTop: "2%"
     },
     btntext: {
         fontSize: 12,
-        color: "#",
+        color: "white",
         fontFamily: "OpenSans-Bold",
         fontWeight: "700"
     },

@@ -26,7 +26,7 @@ const Home = () => {
 
                     const updatedReviews = await Promise.all(
                         reviews.map(async (review) => {
-                            const answer = await getAlbumInfo(review.spotifyId);
+                            const answer = await getAlbumInfo(review.spotifyId, review.type);
                             return {
                                 ...review,
                                 artistName: answer.artistName,
@@ -44,21 +44,33 @@ const Home = () => {
                 }
             }
 
-            const getAlbumInfo = async (albumId) => {
+            const getAlbumInfo = async (spotifyId, type) => {
                 setLoading(true)
-                const token = 'BQD7uDEV89SiZgycSsLpyYeveyIeqJca3jtdmtU348iJL1sgJ_pcV-1IJTWY6uCJYYQi_ijkrEjWK7XzGEHweQEc6P2SUkyv2fo8zgczBfgh4A_p_NflGzpTtwYfPCPAez4ptRu7l0M';
+                const token = 'BQCx_O54Udjm2R_FYqhanbg0eUQQOhR3JMg5-fpRmqq8QD5zJKvEQN8M9FSvGD36Ao8U0cXWlxA5OcBncZy9UVfZlIGgkZme1pkmSxfmFvw29LnyTWdxpfwxxiaajxPoSptMGn3XqRY';
+
+            
 
                 await AsyncStorage.setItem('token', token)
 
-                console.log('Token in home page: ',token)
 
                 try {
                     if (!token) return { name: "", rd: "", artistName: "" };
-                    const response = await axios.get(`https://api.spotify.com/v1/albums/${albumId}`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    })
+                    let response = '';
+                    if (type === 'album') {
+                        response = await axios.get(`https://api.spotify.com/v1/albums/${spotifyId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        })
+                    }
+                    else if (type === 'track') {
+                        response = await axios.get(`https://api.spotify.com/v1/tracks/${spotifyId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        })
+                    }
+
                     const object = {
                         name: response.data.name,
                         rd: response.data.release_date,
@@ -93,12 +105,12 @@ const Home = () => {
                 <View style={styles.wholecol}>
                     {Array.isArray(feed) && feed.map((item, index) => {
                         return (
-                            <View style={styles.each} key={index}>
+                            <View style={[styles.each,{borderColor: (item.type==='album') ? '#FF6500' : '#1DB954'}]} key={index}>
                                 <View style={styles.whitediv}>
                                     <Image style={styles.dp} source={{ uri: item.img }}></Image>
                                     <View style={styles.whitecoldiv}>
                                         <Text style={styles.resultb}>{item.albumName}</Text>
-                                        <Text style={styles.p}>{item.artistName} • Album</Text>
+                                        <Text style={styles.p}>{item.artistName} • {item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Text>
 
                                     </View>
                                 </View>
@@ -109,7 +121,7 @@ const Home = () => {
                                                 key={i}
                                                 name={i < item.stars ? 'star' : 'star-o'}
                                                 size={16}
-                                                color="gold"
+                                                color={(item.type==='album') ? "#FF6500" : "#1DB954"}
                                             />
                                         ))}
                                     </View>
@@ -144,6 +156,7 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         backgroundColor: "#252525",
         width: "95%",
+        borderWidth:0.2,
         alignSelf: "center",
         shadowColor: "#000",
         shadowOpacity: 0.2,
@@ -155,7 +168,7 @@ const styles = StyleSheet.create({
     stars: {
         display: "flex",
         flexDirection: "row",
-        marginTop:10,
+        marginTop: 10,
     },
     col: {
         display: "flex",
@@ -173,7 +186,7 @@ const styles = StyleSheet.create({
     resultb: {
         color: 'white',
         fontSize: 12,
-        width:"80%",
+        width: "90%",
         fontFamily: "OpenSans-Bold",
         paddingVertical: 5,
         lineHeight: 18,
@@ -214,10 +227,10 @@ const styles = StyleSheet.create({
         marginVertical: 15,
         letterSpacing: 1,
     },
-    span:{
-        fontSize:10,
-        color:"grey",
+    span: {
+        fontSize: 10,
+        color: "grey",
         marginTop: 6,
-        fontStyle:"italic"
+        fontStyle: "italic"
     }
 })

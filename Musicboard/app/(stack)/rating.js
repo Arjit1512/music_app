@@ -2,8 +2,9 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView, Scro
 import React, { useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFonts } from 'expo-font';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { FontAwesome, AntDesign } from '@expo/vector-icons';
 import Loader from '../../components/Loader'
 
@@ -11,15 +12,32 @@ const rating = () => {
     const [rating, setRating] = useState(0);
     const [loading, setLoading] = useState(false);
     const [comment, setComment] = useState('');
+    const [type,setType] = useState('album');
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
         "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
     })
 
+    useFocusEffect(
+        React.useCallback( () => {
+            const getType = async() => {
+                try{
+                    const color = await AsyncStorage.getItem('type');
+                    setType(color);
+                }catch(error){
+                    console.log(error)
+                }
+            }
+          getType();
+        },[])
+    )
+
     const handleSubmit = async () => {
         const albumId = await AsyncStorage.getItem('albumId');
+        const songId = await AsyncStorage.getItem('songId');
         const userId = await AsyncStorage.getItem('userId');
         const albumDp = await AsyncStorage.getItem('albumDp');
+        const type = await AsyncStorage.getItem('type');
         setLoading(true)
         try {
             if (!userId) {
@@ -32,9 +50,9 @@ const rating = () => {
                 return;
             }
             const response = await axios.post(`http://10.0.51.34:8000/${userId}/add-review/${albumId}`, {
-                spotifyId: albumId,
+                spotifyId: (type === 'album') ? albumId : songId,
                 img: albumDp,
-                type:'album',
+                type:type,
                 stars: rating,
                 comment: comment || ''
             })
@@ -59,6 +77,7 @@ const rating = () => {
         )
     }
 
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
@@ -76,14 +95,14 @@ const rating = () => {
                                 <FontAwesome
                                     name={rating >= item ? "star" : "star-o"}
                                     size={32}
-                                    color={rating >= item ? "#FF6500" : "grey"}
+                                    color={rating >= item ? (type === "album" ? "#FF6500" : "#1DB954") : "grey"}
                                 />
                             </TouchableOpacity>
                         ))}
                     </View>
                     <TextInput style={styles.ti2} onChangeText={(text) => setComment(text)}
                         placeholder='Write a Review...' placeholderTextColor='grey' value={rating.comment}></TextInput>
-                    <TouchableOpacity style={styles.btn} onPress={handleSubmit}>
+                    <TouchableOpacity style={[styles.btn,{backgroundColor:(type==='album') ? '#FF6500' : '#1DB954'}]} onPress={handleSubmit}>
                         <Text style={styles.btntext} >Submit</Text>
                     </TouchableOpacity>
                 </View>
@@ -129,15 +148,15 @@ const styles = StyleSheet.create({
         textAlign: "center",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#FF6500",
+        backgroundColor:"white",
         color: "white",
-        borderRadius: 10,
+        borderRadius: 25,
         position: "relative",
         top: 20
     },
     btntext: {
         fontSize: 12,
-        color: "#",
+        color: "#fff",
         fontFamily: "OpenSans-Bold",
         fontWeight: "600"
     },

@@ -72,11 +72,11 @@ const allyourratings = () => {
                                             key={i}
                                             name={i < item.stars ? 'star' : 'star-o'}
                                             size={16}
-                                            color="gold"
+                                            color={(item.type==='album') ? "#FF6500" : "#1DB954"}
                                         />
                                     ))}
                                 </View>
-                                <Text style={styles.result}>{item?.comment || ''}</Text>
+                                <Text style={styles.result}>{item?.comment || ''} <Text style={{fontFamily:'OpenSans-Italic'}}>({item.type})</Text></Text>
                             </View>
                         </View>
                     )

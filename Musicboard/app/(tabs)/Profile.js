@@ -32,7 +32,7 @@ const Profile = () => {
                 try {
                     const userId = await AsyncStorage.getItem("userId");
                     const response = await axios.get(`http://10.0.51.34:8000/get-details/${userId}`)
-                    
+
                     AsyncStorage.setItem('userId', userId)
                     setUser(response.data.Message);
                 } catch (error) {
@@ -54,11 +54,12 @@ const Profile = () => {
                     // Use Promise.all to resolve all album requests in parallel
                     const albums = await Promise.all(
                         response.data.map(async (item) => {
-                            const albumData = await getAlbumsInfo(item.spotifyId);
+                            const data = await getAlbumsInfo(item.spotifyId, item.type);
                             return {
                                 ...item,
-                                dp: albumData?.images[0]?.url || '',
-                                albumName: albumData?.name || 'Unknown',
+                                type:item.type,
+                                dp: (item.type === 'album') ? data?.images[0]?.url : data?.album.images[0].url,
+                                albumName: data?.name || 'Unknown',
                             };
                         }))
 
@@ -72,16 +73,26 @@ const Profile = () => {
                 }
             }
 
-            const getAlbumsInfo = async (albumId) => {
+            const getAlbumsInfo = async (spotifyId, type) => {
                 setLoading(true)
                 const token = await AsyncStorage.getItem('token');
-                console.log('Album ID: ', albumId)
+                console.log('Album ID: ', spotifyId)
                 try {
-                    const response = await axios.get(`https://api.spotify.com/v1/albums/${albumId}`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    })
+                    let response = '';
+                    if (type === 'album') {
+                        response = await axios.get(`https://api.spotify.com/v1/albums/${spotifyId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        })
+                    }
+                    else if (type === 'track') {
+                        response = await axios.get(`https://api.spotify.com/v1/tracks/${spotifyId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        })
+                    }
                     return response.data
 
                 } catch (error) {
@@ -97,9 +108,13 @@ const Profile = () => {
         }, [])
     );
 
-    const navigateToSongs = async (albumId) => {
+    const navigateToSongs = async (spotifyId, type) => {
         try {
-            router.push(`album/${albumId}`);
+            if (type === 'album') {
+                router.push(`album/${spotifyId}`);
+            } else if (type === 'track') {
+                router.push(`song/${spotifyId}`);
+            }
         } catch (error) {
             console.log('Error: ', error)
             alert(error);
@@ -170,11 +185,15 @@ const Profile = () => {
                 </View>
             </View>
             <View style={styles.ratediv}>
-                <Text style={styles.ratetext}>Recently Rated Albums:</Text>
+                <Text style={styles.ratetext}>Recently Rated:</Text>
                 <View style={styles.ratingdiv}>
-                    {ratings?.slice(0, 3).map((rating, index) => (
-                        <TouchableOpacity style={styles.singlediv} key={index} onPress={() => navigateToSongs(rating.spotifyId)}>
-                            <Image style={styles.albumImg} source={{ uri: rating.dp }} />
+                    {Array.isArray(ratings) && ratings?.slice(0, 3).map((rating, index) => (
+                        <TouchableOpacity style={styles.singlediv} key={index} onPress={() => navigateToSongs(rating.spotifyId, rating.type)}>
+                            <Image style={[styles.albumImg,
+                                {borderColor: (rating.type==='album') ? '#FF6500' : '#1DB954'},
+                                {borderRadius: (rating.type==='album') ? 8 : 100},
+                                
+                                ]} source={{ uri: rating.dp }} />
                             <Text style={styles.rtitle}>{rating.albumName?.length > 10 ? `${rating.albumName.substr(0, 10)}...` : rating.albumName}</Text>
                         </TouchableOpacity>
                     ))}
@@ -274,7 +293,8 @@ const styles = StyleSheet.create({
     albumImg: {
         width: 90,
         height: 90,
-        borderRadius: 8,
+        // borderRadius: 8,
+        borderWidth:0
     },
     notdiv: {
         display: "flex",
