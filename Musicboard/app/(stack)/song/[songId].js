@@ -166,7 +166,7 @@ const Track = () => {
                         <Text style={styles.songText}>Name: <Text style={styles.span}> {song?.name}</Text></Text>
                         <Text style={styles.songText}>Duration: <Text style={styles.span}> {song?.duration}min</Text></Text>
                         <Text style={styles.songText}>Artist: <Text style={styles.span}> {song?.artistName}</Text></Text>
-                        <Text style={styles.songText}>Recommended Level: <Text style={styles.span}> {song?.pop - 9}%</Text></Text>
+                        <Text style={styles.songText}>Recommended Level: <Text style={styles.span}> {Math.abs(song?.pop - 3)}%</Text></Text>
                         <Text style={styles.songText}>Explicit Lyrics: <Text style={styles.span}> {(song.exp === true) ? 'Yes' : 'No'}</Text></Text>
 
                         <TouchableOpacity style={styles.btn2} onPress={() => navigateTo(song?.link)}>
@@ -262,10 +262,6 @@ const styles = StyleSheet.create({
         borderRadius: 24,
         marginTop: 16,
         padding: 24,
-        shadowColor: '#1DB954',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
         elevation: 8,
         borderWidth: 1,
         borderColor: 'rgba(29, 185, 84, 0.3)',

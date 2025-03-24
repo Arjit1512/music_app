@@ -12,24 +12,24 @@ const rating = () => {
     const [rating, setRating] = useState(0);
     const [loading, setLoading] = useState(false);
     const [comment, setComment] = useState('');
-    const [type,setType] = useState('album');
+    const [type, setType] = useState('album');
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
         "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
     })
 
     useFocusEffect(
-        React.useCallback( () => {
-            const getType = async() => {
-                try{
+        React.useCallback(() => {
+            const getType = async () => {
+                try {
                     const color = await AsyncStorage.getItem('type');
                     setType(color);
-                }catch(error){
+                } catch (error) {
                     console.log(error)
                 }
             }
-          getType();
-        },[])
+            getType();
+        }, [])
     )
 
     const handleSubmit = async () => {
@@ -52,7 +52,7 @@ const rating = () => {
             const response = await axios.post(`http://10.0.51.34:8000/${userId}/add-review/${albumId}`, {
                 spotifyId: (type === 'album') ? albumId : songId,
                 img: albumDp,
-                type:type,
+                type: type,
                 stars: rating,
                 comment: comment || ''
             })
@@ -61,7 +61,14 @@ const rating = () => {
                 setRating(0);
                 router.back()
             }
-            alert(response.data.Message)
+            else if(response.data.Message === undefined){
+                alert("Please login to add rating!")
+                router.push("/login");
+                return;
+            }
+            else {
+                alert(response.data.Message)
+            }
             console.log(response.data.message)
         } catch (error) {
             console.log('Error: ', error)
@@ -102,7 +109,7 @@ const rating = () => {
                     </View>
                     <TextInput style={styles.ti2} onChangeText={(text) => setComment(text)}
                         placeholder='Write a Review...' placeholderTextColor='grey' value={rating.comment}></TextInput>
-                    <TouchableOpacity style={[styles.btn,{backgroundColor:(type==='album') ? '#FF6500' : '#1DB954'}]} onPress={handleSubmit}>
+                    <TouchableOpacity style={[styles.btn, { backgroundColor: (type === 'album') ? '#FF6500' : '#1DB954' }]} onPress={handleSubmit}>
                         <Text style={styles.btntext} >Submit</Text>
                     </TouchableOpacity>
                 </View>
@@ -148,7 +155,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor:"white",
+        backgroundColor: "white",
         color: "white",
         borderRadius: 25,
         position: "relative",

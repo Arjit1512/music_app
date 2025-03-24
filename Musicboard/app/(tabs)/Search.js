@@ -1,4 +1,4 @@
-import { StyleSheet, StatusBar, Text, TextInput, View, SafeAreaView, Image, ScrollView, TouchableOpacity } from 'react-native'
+import { StyleSheet, StatusBar, Text, TextInput, View, SafeAreaView, Image, ScrollView, TouchableOpacity, Platform } from 'react-native'
 import React, { useEffect, useState, useCallback } from 'react'
 import axios from 'axios';
 import { useFonts } from 'expo-font';
@@ -142,7 +142,7 @@ const SearchPage = () => {
         <StatusBar barStyle="light-content" backgroundColor="#151515" />
         <View style={searchPressed ? styles.sdiv : styles.searchdiv} onChange={handleChange}>
           <TextInput style={styles.bar} onPress={() => setSearchPressed(true)}
-            onChangeText={async (text) => { setSearch(text) }} value={search} placeholder=' search' placeholderTextColor='#888'></TextInput>
+            onChangeText={async (text) => { setSearch(text) }} value={search} placeholder=' search' placeholderTextColor='#888' textAlignVertical="center" ></TextInput>
           {searchPressed && (
             <View style={styles.cancel} >
               <Text style={{ color: "grey" }} onPress={() => { setSearchPressed(false), setSearch('') }} >cancel</Text>
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     color: 'white',
     width: 310,
     backgroundColor: "black",
-    height: 30,
+    height: Platform.OS==='ios' ? 30: 38,
     borderRadius: 10
   },
   cancel: {
