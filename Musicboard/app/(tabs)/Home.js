@@ -5,19 +5,55 @@ import Loader from '../../components/Loader'
 import { useFonts } from 'expo-font';
 import { useFocusEffect } from 'expo-router';
 import axios from 'axios';
+import { encode } from "base-64";
+import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Home = () => {
     const [loading, setLoading] = useState(false);
     const [feed, setFeed] = useState([]);
 
+    const SPOTIFY_CLIENT_ID = Constants.expoConfig.extra.SPOTIFY_CLIENT_ID;
+    const SPOTIFY_CLIENT_SECRET = Constants.expoConfig.extra.SPOTIFY_CLIENT_SECRET;
+
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
         "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
     })
 
+
+    const getToken = async () => {
+        try {
+            console.log("Fetching new Spotify token...");
+            const credentials = `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`;
+            const encodedCredentials = encode(credentials); // Use base-64 encoding
+    
+            const response = await axios.post(
+                "https://accounts.spotify.com/api/token",
+                new URLSearchParams({ grant_type: "client_credentials" }).toString(),
+                {
+                    headers: {
+                        "Authorization": `Basic ${encodedCredentials}`,
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                }
+            );
+    
+            const token = response.data.access_token;
+            console.log("Spotify Token:", token);
+            await AsyncStorage.setItem('token', token);
+            return token;
+        } catch (error) {
+            console.error("Error fetching Spotify token:", error.response?.data || error.message);
+        }
+    };
+    
+
     useFocusEffect(
         React.useCallback(() => {
+            let tokenRefreshInterval = setInterval(() => {
+                getToken();
+            }, 60 * 60 * 1000); // Refresh token every hour
             const getFeed = async () => {
                 setLoading(true)
                 try {
@@ -46,11 +82,14 @@ const Home = () => {
 
             const getAlbumInfo = async (spotifyId, type) => {
                 setLoading(true)
-                const token = 'BQCx_O54Udjm2R_FYqhanbg0eUQQOhR3JMg5-fpRmqq8QD5zJKvEQN8M9FSvGD36Ao8U0cXWlxA5OcBncZy9UVfZlIGgkZme1pkmSxfmFvw29LnyTWdxpfwxxiaajxPoSptMGn3XqRY';
 
-            
 
-                await AsyncStorage.setItem('token', token)
+                const token = await AsyncStorage.getItem('token');
+                if (!token) {
+                    console.log("Token not available, fetching new one...");
+                    await getToken();
+                    return { name: "", rd: "", artistName: "" };
+                }
 
 
                 try {
@@ -86,6 +125,10 @@ const Home = () => {
                 }
             }
             getFeed();
+
+            return () => {
+                clearInterval(tokenRefreshInterval); // Clear interval when component unmounts
+            };
         }, [])
     )
 
@@ -105,7 +148,7 @@ const Home = () => {
                 <View style={styles.wholecol}>
                     {Array.isArray(feed) && feed.map((item, index) => {
                         return (
-                            <View style={[styles.each,{borderColor: (item.type==='album') ? '#FF6500' : '#1DB954'}]} key={index}>
+                            <View style={[styles.each, { borderColor: (item.type === 'album') ? '#FF6500' : '#1DB954' }]} key={index}>
                                 <View style={styles.whitediv}>
                                     <Image style={styles.dp} source={{ uri: item.img }}></Image>
                                     <View style={styles.whitecoldiv}>
@@ -121,7 +164,7 @@ const Home = () => {
                                                 key={i}
                                                 name={i < item.stars ? 'star' : 'star-o'}
                                                 size={16}
-                                                color={(item.type==='album') ? "#FF6500" : "#1DB954"}
+                                                color={(item.type === 'album') ? "#FF6500" : "#1DB954"}
                                             />
                                         ))}
                                     </View>
@@ -156,7 +199,7 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         backgroundColor: "#252525",
         width: "95%",
-        borderWidth:0.2,
+        borderWidth: 0.2,
         alignSelf: "center",
         shadowColor: "#000",
         shadowOpacity: 0.2,

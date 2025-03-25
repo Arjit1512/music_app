@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.arjit1512.Musicboard"
     },
     "web": {
       "bundler": "metro",
@@ -36,6 +37,16 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "SPOTIFY_CLIENT_ID":"ddad339fb6394da18c6e67ef607f189a",
+      "SPOTIFY_CLIENT_SECRET":"ace868b377284bbc81c7ffb777721cb9",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "1915b038-624c-49b3-8b07-d0a760e3b586"
+      }
     }
   }
 }
