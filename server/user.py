@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import List
 from datetime import datetime,timezone
 from bson import ObjectId
+from mangum import Mangum
 from dotenv import load_dotenv
 import os
 
@@ -170,5 +171,8 @@ async def get_details(id: str):
     user["_id"] = str(user["_id"])
     return {"Message": user}
 
+
+# # At the very end of your file, make sure this is the last thing for the deployment of VERCEL:
+# handler = Mangum(app, lifespan="off")
 
 
