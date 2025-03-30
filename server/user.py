@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import List
 from datetime import datetime,timezone
 from bson import ObjectId
+from mangum import Mangum
 from dotenv import load_dotenv
 import os
 
@@ -46,7 +47,8 @@ class User(BaseModel):
     reviews :  List[Review] = []
     friends : List[str] = []
 
-    
+# ASGI adapter for Vercel
+handler = Mangum(app)
 
 # login-section
 @app.post("/register")
