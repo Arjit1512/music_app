@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 import axios from 'axios';
 import { useFonts } from 'expo-font';
 import { router, useFocusEffect } from 'expo-router';
+import Constants from 'expo-constants';
 import { ChevronRight, FileArchive, Search } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loader from '../../components/Loader'
@@ -10,6 +11,7 @@ import { debounce } from 'lodash';
 
 
 const SearchPage = () => {
+  const API_URL = Constants.expoConfig.extra.API_URL;
   const [search, setSearch] = useState('');
   const [option, setOption] = useState('tracks');
   const [searchPressed, setSearchPressed] = useState(false)

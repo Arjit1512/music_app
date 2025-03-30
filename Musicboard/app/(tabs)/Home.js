@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, SafeAreaView, ScrollView, StatusBar, Image } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { FontAwesome } from 'react-native-vector-icons';
 import Loader from '../../components/Loader'
 import { useFonts } from 'expo-font';
@@ -15,11 +15,27 @@ const Home = () => {
 
     const SPOTIFY_CLIENT_ID = Constants.expoConfig.extra.SPOTIFY_CLIENT_ID;
     const SPOTIFY_CLIENT_SECRET = Constants.expoConfig.extra.SPOTIFY_CLIENT_SECRET;
+    const API_URL = Constants.expoConfig.extra.API_URL;
+    // console.log('SCI: ',SPOTIFY_CLIENT_ID);
+    // console.log('API URL: ',API_URL);
 
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
         "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
     })
+
+    useEffect(() => {
+        // Call getToken immediately on mount
+        getToken();
+
+        // Set up token refresh interval (every hour)
+        const tokenRefreshInterval = setInterval(() => {
+            getToken();
+        }, 60 * 60 * 1000); // Refresh token every hour
+
+        // Clear interval when the component unmounts
+        return () => clearInterval(tokenRefreshInterval);
+    }, []);
 
 
     const getToken = async () => {
@@ -27,7 +43,7 @@ const Home = () => {
             console.log("Fetching new Spotify token...");
             const credentials = `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`;
             const encodedCredentials = encode(credentials); // Use base-64 encoding
-    
+
             const response = await axios.post(
                 "https://accounts.spotify.com/api/token",
                 new URLSearchParams({ grant_type: "client_credentials" }).toString(),
@@ -38,8 +54,9 @@ const Home = () => {
                     }
                 }
             );
-    
+
             const token = response.data.access_token;
+
             console.log("Spotify Token:", token);
             await AsyncStorage.setItem('token', token);
             return token;
@@ -47,17 +64,15 @@ const Home = () => {
             console.error("Error fetching Spotify token:", error.response?.data || error.message);
         }
     };
-    
+
 
     useFocusEffect(
         React.useCallback(() => {
-            let tokenRefreshInterval = setInterval(() => {
-                getToken();
-            }, 60 * 60 * 1000); // Refresh token every hour
             const getFeed = async () => {
                 setLoading(true)
                 try {
-                    const response = await axios.get(`http://10.0.51.34:8000/reviews`)
+                    const response = await axios.get(`${API_URL}/reviews`)
+                    console.log('API Response:', response.data);
                     const reviews = response.data.reviews;
 
                     const updatedReviews = await Promise.all(
@@ -126,11 +141,10 @@ const Home = () => {
             }
             getFeed();
 
-            return () => {
-                clearInterval(tokenRefreshInterval); // Clear interval when component unmounts
-            };
         }, [])
     )
+
+    console.log('Feed: ',feed);
 
 
     if (loading) {

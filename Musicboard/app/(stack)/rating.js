@@ -7,12 +7,14 @@ import { useFonts } from 'expo-font';
 import { router, useFocusEffect } from 'expo-router';
 import { FontAwesome, AntDesign } from '@expo/vector-icons';
 import Loader from '../../components/Loader'
+import Constants from 'expo-constants';
 
 const rating = () => {
     const [rating, setRating] = useState(0);
     const [loading, setLoading] = useState(false);
     const [comment, setComment] = useState('');
     const [type, setType] = useState('album');
+    const API_URL = Constants.expoConfig.extra.API_URL;
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
         "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
@@ -49,7 +51,7 @@ const rating = () => {
                 alert("Please add a rating!")
                 return;
             }
-            const response = await axios.post(`http://10.0.51.34:8000/${userId}/add-review/${albumId}`, {
+            const response = await axios.post(`${API_URL}/${userId}/add-review/${albumId}`, {
                 spotifyId: (type === 'album') ? albumId : songId,
                 img: albumDp,
                 type: type,

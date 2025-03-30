@@ -2,6 +2,7 @@ import { StyleSheet, StatusBar, Text, TextInput, View, SafeAreaView, Image, Scro
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import { useFonts } from 'expo-font';
+import Constants from 'expo-constants';
 import { FontAwesome, AntDesign, Entypo } from 'react-native-vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { ChevronRight, Search } from 'lucide-react-native';
@@ -12,6 +13,8 @@ import { Linking } from 'react-native';
 const Track = () => {
 
     const { songId } = useLocalSearchParams();
+    const API_URL = Constants.expoConfig.extra.API_URL;
+    console.log('SONG ID THAT WE NAVIGATED IS: ',JSON.stringify(songId));
     const [loading, setLoading] = useState(false);
     const [rating, setRating] = useState(0);
     const [no, setNo] = useState(0);
@@ -72,6 +75,7 @@ const Track = () => {
     )
 
     const navigateTo = async (songId) => {
+        setLoading(true);
         try {
             Linking.openURL(songId);
         } catch (error) {
@@ -85,7 +89,7 @@ const Track = () => {
 
     const getavgRatingSong = async () => {
         try {
-            const response = await axios.get(`http://10.0.51.34:8000/reviews`);
+            const response = await axios.get(`${API_URL}/reviews`);
 
             const filteredArray = response.data.reviews.filter((item) => item.spotifyId === songId & item.type === 'track');
             if (filteredArray.length === 0) return 0;

@@ -6,11 +6,13 @@ import { useFonts } from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router, useFocusEffect } from 'expo-router'
 import Loader from '../../components/Loader'
+import Constants from 'expo-constants';
 
 const allyourratings = () => {
 
     const [ratings, setRatings] = useState([]);
     const [loading, setLoading] = useState(false);
+    const API_URL = Constants.expoConfig.extra.API_URL;
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
         "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
@@ -27,7 +29,7 @@ const allyourratings = () => {
                         alert("Please login!")
                         return;
                     }
-                    const response = await axios.get(`http://10.0.51.34:8000/${userId}/reviews`);
+                    const response = await axios.get(`${API_URL}/${userId}/reviews`);
 
                     const sortedArray = response.data.sort((a, b) => new Date(b.date) - new Date(a.date));
                     setRatings(sortedArray);

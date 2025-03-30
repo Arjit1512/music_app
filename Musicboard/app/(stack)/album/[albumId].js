@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useFonts } from 'expo-font';
 import { BlurView } from 'expo-blur';
+import Constants from 'expo-constants';
 import { FontAwesome, AntDesign } from 'react-native-vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import Loader from '../../../components/Loader'
@@ -12,6 +13,7 @@ import { Entypo } from '@expo/vector-icons';
 
 const Songs = () => {
     const { albumId } = useLocalSearchParams();
+    const API_URL = Constants.expoConfig.extra.API_URL;
     const [songs, setSongs] = useState([]);
     const [rating, setRating] = useState(0);
     const [no, setNo] = useState(0);
@@ -87,7 +89,7 @@ const Songs = () => {
 
     const getavgRatingAlbum = async () => {
         try {
-            const response = await axios.get(`http://10.0.51.34:8000/reviews`);
+            const response = await axios.get(`${API_URL}/reviews`);
 
             const filteredArray = response.data.reviews.filter((item) => item.spotifyId === albumId & item.type==='album');
             if (filteredArray.length === 0) return 0;

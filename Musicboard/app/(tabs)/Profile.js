@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useFonts } from 'expo-font'
+import Constants from 'expo-constants';
 import { router, useFocusEffect } from 'expo-router'
 import { FontAwesome, AntDesign } from '@expo/vector-icons';
 import Loader from '../../components/Loader'
@@ -12,6 +13,7 @@ const Profile = () => {
     const [user, setUser] = useState({});
     const [ratings, setRatings] = useState([]);
     const [loading, setLoading] = useState(false);
+    const API_URL = Constants.expoConfig.extra.API_URL;
 
     const [isl, setIsl] = useState(false);
 
@@ -31,7 +33,7 @@ const Profile = () => {
                 }
                 try {
                     const userId = await AsyncStorage.getItem("userId");
-                    const response = await axios.get(`http://10.0.51.34:8000/get-details/${userId}`)
+                    const response = await axios.get(`${API_URL}/get-details/${userId}`)
 
                     AsyncStorage.setItem('userId', userId)
                     setUser(response.data.Message);
@@ -49,7 +51,7 @@ const Profile = () => {
                 try {
                     const userId = await AsyncStorage.getItem("userId");
                     if(!userId)return;
-                    const response = await axios.get(`http://10.0.51.34:8000/${userId}/reviews`)
+                    const response = await axios.get(`${API_URL}/${userId}/reviews`)
                     console.log('Response: ', response.data);
                     if(response.data.Message==="User does not exists!"){
                         setIsl(false);

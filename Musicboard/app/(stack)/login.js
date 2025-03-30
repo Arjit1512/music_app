@@ -6,12 +6,14 @@ import { useFonts } from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
 import Loader from '../../components/Loader';
+import Constants from 'expo-constants';
 
 const login = () => {
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const API_URL = Constants.expoConfig.extra.API_URL;
 
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
@@ -21,7 +23,7 @@ const login = () => {
     const handleLogin = async () => {
         setLoading(true)
         try {
-            const response = await axios.post(`http://10.0.51.34:8000/login`, {
+            const response = await axios.post(`${API_URL}/login`, {
                 username, password
             })
             if (response.data.Message === "User logged in successfully!") {
