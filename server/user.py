@@ -22,7 +22,7 @@ app.add_middleware(
 
 @app.get("/")
 def index():
-    return {"Message":"Kesari!"}
+    return {"Message":"Success!"}
 
 MONGO_URL=os.getenv("MONGO_URL")
 DB_NAME=os.getenv("DB_NAME")
