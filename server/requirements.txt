@@ -1,6 +1,2 @@
 fastapi
 mangum
-pydantic
-python-dotenv
-motor
-uvicorn

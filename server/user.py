@@ -185,4 +185,4 @@ app = FastAPI()
 def read_root():
     return {"Hello": "World"}
 
-handler = Mangum(app, lifespan="off")
+handler = Mangum(app)
