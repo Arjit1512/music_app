@@ -1,19 +1,15 @@
 {
     "version": 2,
     "builds": [
-      {
-        "src": "server/user.py",
-        "use": "@vercel/python",
-        "config": {
-          "runtime": "python3.9"
+        {
+            "src": "server/user.py",
+            "use": "@vercel/python"
         }
-      }
     ],
     "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "server/user.py"
-      }
+        {
+            "src": "/(.*)",
+            "dest": "server/user.py"
+        }
     ]
-  }
-  
+}
