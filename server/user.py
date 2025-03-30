@@ -47,19 +47,35 @@ class User(BaseModel):
     reviews :  List[Review] = []
     friends : List[str] = []
 
-# login-section
 @app.post("/register")
 async def register(user: User):
-    if user.username=='' or user.password=='':
+    if user.username == '' or user.password == '':
         return {"Message": "username and password are required!"}
-    existinguser = await collection.find_one({"username" : user.username})
-    if existinguser:
-        return {"Message" : "User already exists with same username!"}
-    newuser = user.model_dump() #replacing dict with model_dump since dict is depreciated
-    result = await collection.insert_one(newuser)
-    answer = result.inserted_id
-    answer = str(answer)
-    return {"Message": "User added successfully!", "userId" : answer}
+    try:
+        existinguser = await app.collection.find_one({"username": user.username})
+        if existinguser:
+            return {"Message": "User already exists with same username!"}
+        newuser = user.model_dump()
+        result = await app.collection.insert_one(newuser)
+        answer = str(result.inserted_id)
+        return {"Message": "User added successfully!", "userId": answer}
+    except Exception as e:
+        print(f"Error in register: {e}")
+        return {"Error": "Internal server error", "details": str(e)}
+
+# # login-section
+# @app.post("/register")
+# async def register(user: User):
+#     if user.username=='' or user.password=='':
+#         return {"Message": "username and password are required!"}
+#     existinguser = await collection.find_one({"username" : user.username})
+#     if existinguser:
+#         return {"Message" : "User already exists with same username!"}
+#     newuser = user.model_dump() #replacing dict with model_dump since dict is depreciated
+#     result = await collection.insert_one(newuser)
+#     answer = result.inserted_id
+#     answer = str(answer)
+#     return {"Message": "User added successfully!", "userId" : answer}
 
 # @app.post("/login")
 # async def login(user: User):
