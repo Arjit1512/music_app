@@ -47,9 +47,6 @@ class User(BaseModel):
     reviews :  List[Review] = []
     friends : List[str] = []
 
-# ASGI adapter for Vercel
-handler = Mangum(app)
-
 # login-section
 @app.post("/register")
 async def register(user: User):
@@ -173,3 +170,7 @@ async def get_details(id: str):
         return {"Error":"User does not exists!"}
     user["_id"] = str(user["_id"])
     return {"Message": user}
+
+
+# At the very end of your file, make sure this is the last thing for the deployment of VERCEL:
+handler = Mangum(app, lifespan="off")
