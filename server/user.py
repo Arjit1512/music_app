@@ -1,14 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
-from typing import List, Optional, Union
+from typing import List, Optional
 from datetime import datetime,timezone
 from bson import ObjectId
-from mangum import Mangum
-
-
-
 from dotenv import load_dotenv
 import os
 
@@ -31,10 +27,15 @@ def index():
 MONGO_URL=os.getenv("MONGO_URL")
 DB_NAME=os.getenv("DB_NAME")
 
-database = AsyncIOMotorClient(MONGO_URL)
-db = database[DB_NAME]
-collection = db["users"]
-reviews = db["reviews"]
+# database = AsyncIOMotorClient(MONGO_URL)
+# db = database[DB_NAME]
+# collection = db["users"]
+# reviews = db["reviews"]
+# Dependency to get the database connection
+async def get_db():
+    client = AsyncIOMotorClient(MONGO_URL)
+    db = client[DB_NAME]
+    return db
 
 class Review(BaseModel):
     type: str 
@@ -51,22 +52,21 @@ class User(BaseModel):
     friends : List[str] = []
 
 # login-section
-
 @app.post("/register")
-async def register(user: User):
+async def register(user: User, db=Depends(get_db)):
     try:
         # Validate input
         if not user.username or not user.password:
             raise HTTPException(status_code=400, detail="Username and password are required!")
 
         # Check if user already exists
-        existing_user = await collection.find_one({"username": user.username})
+        existing_user = await db["users"].find_one({"username": user.username})
         if existing_user:
             raise HTTPException(status_code=400, detail="User already exists with the same username!")
 
         # Insert the new user
         new_user = user.model_dump()  # Using model_dump() instead of dict()
-        result = await collection.insert_one(new_user)
+        result = await db["users"].insert_one(new_user)
 
         return {
             "Message": "User added successfully!",
