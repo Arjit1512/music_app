@@ -191,4 +191,4 @@ async def register(user: User):
 # # # At the very end of your file, make sure this is the last thing for the deployment of VERCEL:
 # # handler = Mangum(app, lifespan="off")
 
-
+# vercel
