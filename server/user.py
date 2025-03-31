@@ -80,7 +80,7 @@ class User(BaseModel):
     
 @app.post("/register")
 async def register(user: User):
-    db = get_db()
+    db = await get_db()
     collection = db["users"]
     if user.username=='' or user.password=='':
         return {"Message": "username and password are required!"}
