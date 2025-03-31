@@ -6,9 +6,14 @@ from typing import List, Optional, Union
 from datetime import datetime,timezone
 from bson import ObjectId
 from mangum import Mangum
+import nest_asyncio
+import asyncio
+
+
 from dotenv import load_dotenv
 import os
 
+nest_asyncio.apply()
 app = FastAPI()
 
 load_dotenv()
