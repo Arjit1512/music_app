@@ -1,67 +1,67 @@
-# from fastapi import FastAPI
-# from fastapi.middleware.cors import CORSMiddleware
-# from motor.motor_asyncio import AsyncIOMotorClient
-# from pydantic import BaseModel
-# from typing import List
-# from datetime import datetime,timezone
-# from bson import ObjectId
-# from mangum import Mangum
-# from dotenv import load_dotenv
-# import os
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel
+from typing import List
+from datetime import datetime,timezone
+from bson import ObjectId
+from mangum import Mangum
+from dotenv import load_dotenv
+import os
 
-# app = FastAPI()
+app = FastAPI()
 
-# load_dotenv()
+load_dotenv()
 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["*"],  # Use ["http://localhost:8081"] for more security
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Use ["http://localhost:8081"] for more security
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# @app.get("/")
-# def index():
-#     return {"Message":"Success!"}
+@app.get("/")
+def index():
+    return {"Message":"Success!"}
 
-# MONGO_URL=os.getenv("MONGO_URL")
-# DB_NAME=os.getenv("DB_NAME")
+MONGO_URL=os.getenv("MONGO_URL")
+DB_NAME=os.getenv("DB_NAME")
 
-# database = AsyncIOMotorClient(MONGO_URL)
-# db = database[DB_NAME]
-# collection = db["users"]
-# reviews = db["reviews"]
+database = AsyncIOMotorClient(MONGO_URL)
+db = database[DB_NAME]
+collection = db["users"]
+reviews = db["reviews"]
 
-# class Review(BaseModel):
-#     type: str 
-#     spotifyId : str  
-#     img : str 
-#     stars: int
-#     comment : str  
-#     date: str | None = None
+class Review(BaseModel):
+    type: str 
+    spotifyId : str  
+    img : str 
+    stars: int
+    comment : str  
+    date: str | None = None
 
-# class User(BaseModel):
-#     username : str = ''
-#     password : str = ''
-#     reviews :  List[Review] = []
-#     friends : List[str] = []
+class User(BaseModel):
+    username : str = ''
+    password : str = ''
+    reviews :  List[Review] = []
+    friends : List[str] = []
 
-# @app.post("/register")
-# async def register(user: User):
-#     if user.username == '' or user.password == '':
-#         return {"Message": "username and password are required!"}
-#     try:
-#         existinguser = await app.collection.find_one({"username": user.username})
-#         if existinguser:
-#             return {"Message": "User already exists with same username!"}
-#         newuser = user.model_dump()
-#         result = await app.collection.insert_one(newuser)
-#         answer = str(result.inserted_id)
-#         return {"Message": "User added successfully!", "userId": answer}
-#     except Exception as e:
-#         print(f"Error in register: {e}")
-#         return {"Error": "Internal server error", "details": str(e)}
+@app.post("/register")
+async def register(user: User):
+    if user.username == '' or user.password == '':
+        return {"Message": "username and password are required!"}
+    try:
+        existinguser = await app.collection.find_one({"username": user.username})
+        if existinguser:
+            return {"Message": "User already exists with same username!"}
+        newuser = user.model_dump()
+        result = await app.collection.insert_one(newuser)
+        answer = str(result.inserted_id)
+        return {"Message": "User added successfully!", "userId": answer}
+    except Exception as e:
+        print(f"Error in register: {e}")
+        return {"Error": "Internal server error", "details": str(e)}
 
 # # login-section
 # @app.post("/register")
@@ -192,85 +192,3 @@
 # # handler = Mangum(app, lifespan="off")
 
 
-
-
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-from pydantic import BaseModel
-from typing import List
-from datetime import datetime, timezone
-from bson import ObjectId
-from mangum import Mangum
-from dotenv import load_dotenv
-import os
-
-app = FastAPI()
-
-load_dotenv()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Use ["http://localhost:8081"] for more security
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.get("/")
-def index():
-    return {"Message": "Success!"}
-
-# Loading environment variables
-MONGO_URL = os.getenv("MONGO_URL")
-DB_NAME = os.getenv("DB_NAME")
-
-# Check if environment variables are loaded correctly
-if not MONGO_URL or not DB_NAME:
-    print("Error: Environment variables not set correctly!")
-    exit(1)
-
-# Setting up MongoDB connection
-try:
-    database = AsyncIOMotorClient(MONGO_URL)
-    db = database[DB_NAME]
-    collection = db["users"]
-    reviews = db["reviews"]
-    print("Successfully connected to the database")
-except Exception as e:
-    print(f"Database connection failed: {e}")
-    exit(1)
-
-# Models
-class Review(BaseModel):
-    type: str 
-    spotifyId: str  
-    img: str 
-    stars: int
-    comment: str  
-    date: str | None = None
-
-class User(BaseModel):
-    username: str = ''
-    password: str = ''
-    reviews: List[Review] = []
-    friends: List[str] = []
-
-# Register endpoint
-@app.post("/register")
-async def register(user: User):
-    if user.username == '' or user.password == '':
-        return {"Message": "username and password are required!"}
-    try:
-        existinguser = await collection.find_one({"username": user.username})
-        if existinguser:
-            return {"Message": "User already exists with the same username!"}
-        newuser = user.model_dump()
-        result = await collection.insert_one(newuser)
-        answer = str(result.inserted_id)
-        return {"Message": "User added successfully!", "userId": answer}
-    except Exception as e:
-        print(f"Error in register: {e}")
-        return {"Error": "Internal server error", "details": str(e)}
-
-handler = Mangum(app)
