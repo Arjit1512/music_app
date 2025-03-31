@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
@@ -51,18 +51,44 @@ class User(BaseModel):
     friends : List[str] = []
 
 # login-section
+
 @app.post("/register")
 async def register(user: User):
-    if user.username=='' or user.password=='':
-        return {"Message": "username and password are required!"}
-    existinguser = await collection.find_one({"username" : user.username})
-    if existinguser:
-        return {"Message" : "User already exists with same username!"}
-    newuser = user.model_dump() #replacing dict with model_dump since dict is depreciated
-    result = await collection.insert_one(newuser)
-    answer = result.inserted_id
-    answer = str(answer)
-    return {"Message": "User added successfully!", "userId" : answer}
+    try:
+        # Validate input
+        if not user.username or not user.password:
+            raise HTTPException(status_code=400, detail="Username and password are required!")
+
+        # Check if user already exists
+        existing_user = await collection.find_one({"username": user.username})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="User already exists with the same username!")
+
+        # Insert the new user
+        new_user = user.model_dump()  # Using model_dump() instead of dict()
+        result = await collection.insert_one(new_user)
+
+        return {
+            "Message": "User added successfully!",
+            "userId": str(result.inserted_id)
+        }
+
+    except Exception as e:
+        print(f"Error during registration: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+# @app.post("/register")
+# async def register(user: User):
+#     if user.username=='' or user.password=='':
+#         return {"Message": "username and password are required!"}
+#     existinguser = await collection.find_one({"username" : user.username})
+#     if existinguser:
+#         return {"Message" : "User already exists with same username!"}
+#     newuser = user.model_dump() #replacing dict with model_dump since dict is depreciated
+#     result = await collection.insert_one(newuser)
+#     answer = result.inserted_id
+#     answer = str(answer)
+#     return {"Message": "User added successfully!", "userId" : answer}
 
 @app.post("/login")
 async def login(user: User):
