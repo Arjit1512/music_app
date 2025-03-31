@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional, Union
 from datetime import datetime,timezone
 from bson import ObjectId
 from mangum import Mangum
@@ -39,7 +39,7 @@ class Review(BaseModel):
     img : str 
     stars: int
     comment : str  
-    date: str | None = None
+    date: Optional[str] = None
 
 class User(BaseModel):
     username : str = ''
