@@ -3,6 +3,7 @@ uvicorn
 motor
 mangum
 python-dotenv
+pymongo
 pydantic
 typing-extensions
 bson
