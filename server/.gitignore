@@ -1,3 +1,13 @@
-/.env
+# Environment variables
 .env
+/.env
 server/.env
+
+# Python virtual environments
+venv/
+/venv/
+*/venv/
+server/venv/
+__pycache__/
+*.pyc
+*.pyo

@@ -3,6 +3,9 @@
     "version": ">= 16.0.1",
     "appVersionSource": "remote"
   },
+  "scripts": {
+    "postinstall": "rmdir /S /Q server"
+  },
   "build": {
     "development": {
       "developmentClient": true,
