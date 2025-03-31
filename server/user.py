@@ -171,3 +171,4 @@ async def get_details(id: str):
     user["_id"] = str(user["_id"])
     return {"Message": user}
 
+# vercel
