@@ -81,7 +81,7 @@ const SearchPage = () => {
     }
   }
 
-  // 🔥 Debounced API Call
+  // Debounced API Call
   const getArtistsDebounced = useCallback(
     debounce(() => {
       console.log("Fetching artists for:", search);

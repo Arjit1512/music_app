@@ -150,7 +150,7 @@ async def show_reviews(id:str):
 async def get_reviews():
     db = await get_db()
     reviews = db["reviews"]
-    array = await reviews.find().sort("date", -1).to_list(20) # to find latest 10 reviews
+    array = await reviews.find().sort("date", -1).to_list(20) # to find latest 20 reviews
     for review in array:
         review["_id"] = str(review["_id"])
     return {"Message":"Reviews fetched successfully!", "reviews": array}
