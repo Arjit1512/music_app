@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, ScrollView, StatusBar, Image, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, SafeAreaView, ScrollView, StatusBar, Image, TouchableOpacity, Linking } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { FontAwesome } from 'react-native-vector-icons';
 import Loader from '../../components/Loader'
@@ -17,7 +17,7 @@ const Home = () => {
     const SPOTIFY_CLIENT_SECRET = Constants.expoConfig.extra.SPOTIFY_CLIENT_SECRET;
     const API_URL = Constants.expoConfig.extra.API_URL;
     // console.log('SCI: ',SPOTIFY_CLIENT_ID);
-     console.log('API URL: ',API_URL);
+    console.log('API URL: ', API_URL);
 
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
@@ -72,7 +72,7 @@ const Home = () => {
                 setLoading(true)
                 try {
                     const response = await axios.get(`${API_URL}/reviews`)
-                    console.log('API Response:', response.data);
+                    //console.log('API Response:', response.data);
                     const reviews = response.data.reviews;
 
                     const updatedReviews = await Promise.all(
@@ -146,7 +146,7 @@ const Home = () => {
 
     //console.log('Feed: ', feed);
 
-    const handleNavigate = async(type, id) => {
+    const handleNavigate = async (type, id) => {
         try {
             if (type === 'album') {
                 await AsyncStorage.setItem('albumId', id);
@@ -179,32 +179,40 @@ const Home = () => {
                 <View style={styles.wholecol}>
                     {Array.isArray(feed) && feed.map((item, index) => {
                         return (
-                            <TouchableOpacity key={index} onPress={() => handleNavigate(item.type,item.spotifyId)}>
-                                <View style={[styles.each, { borderColor: (item.type === 'album') ? '#FF6500' : '#1DB954' }]} key={index}>
-                                    <View style={styles.whitediv}>
-                                        <Image style={styles.dp} source={{ uri: item.img }}></Image>
-                                        <View style={styles.whitecoldiv}>
-                                            <Text style={styles.resultb}>{item.albumName}</Text>
-                                            <Text style={styles.p}>{item.artistName} • {item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Text>
+                            <View>
+                                <TouchableOpacity key={index} onPress={() => handleNavigate(item.type, item.spotifyId)}>
+                                    <View style={[styles.each, { borderColor: (item.type === 'album') ? '#FF6500' : '#1DB954' }]} key={index}>
+                                        <View style={[styles.whitediv]}>
+                                            <Image style={styles.dp} source={{ uri: item.img }}></Image>
+                                            <View style={styles.whitecoldiv}>
+                                                <Text style={styles.resultb}>{item.albumName}</Text>
+                                                <Text style={styles.p}>{item.artistName} • {item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Text>
 
+                                            </View>
+                                        </View>
+                                        <View style={styles.col} key={index}>
+                                            <View style={styles.stars}>
+                                                {[...Array(5)].map((_, i) => (
+                                                    <FontAwesome
+                                                        key={i}
+                                                        name={i < item.stars ? 'star' : 'star-o'}
+                                                        size={16}
+                                                        color={(item.type === 'album') ? "#FF6500" : "#1DB954"}
+                                                    />
+                                                ))}
+                                            </View>
+                                            <Text style={styles.result}>{item?.comment || ''}</Text>
+                                            <Text style={styles.span}>• Posted by {item?.username} at {new Date(item.date).toLocaleDateString()}</Text>
                                         </View>
                                     </View>
-                                    <View style={styles.col} key={index}>
-                                        <View style={styles.stars}>
-                                            {[...Array(5)].map((_, i) => (
-                                                <FontAwesome
-                                                    key={i}
-                                                    name={i < item.stars ? 'star' : 'star-o'}
-                                                    size={16}
-                                                    color={(item.type === 'album') ? "#FF6500" : "#1DB954"}
-                                                />
-                                            ))}
-                                        </View>
-                                        <Text style={styles.result}>{item?.comment || ''}</Text>
-                                        <Text style={styles.span}>• Posted by {item?.username} at {new Date(item.date).toLocaleDateString()}</Text>
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
+                                </TouchableOpacity>
+                                {(index!==0 && index % 20 == 0) && (
+                                    <TouchableOpacity onPress={() => Linking.openURL("https://2-0-ochre.vercel.app")}>
+                                        <Image source={require("../../assets/images/th.png")} style={styles.ad} />
+                                    </TouchableOpacity>
+                                )
+                                }
+                            </View>
                         )
                     })}
                 </View>
@@ -286,7 +294,9 @@ const styles = StyleSheet.create({
         backgroundColor: "#414141",
         borderRadius: 6,
         display: "flex",
-        flexDirection: "row"
+        flexDirection: "row",
+        borderWidth:0.2,
+        
     },
     whitecoldiv: {
         display: "flex",
@@ -308,5 +318,16 @@ const styles = StyleSheet.create({
         color: "grey",
         marginTop: 6,
         fontStyle: "italic"
+    },
+    ad:{
+        height:120,
+        width:"94%",
+        alignSelf:"center",
+        borderColor:"white",
+        borderRadius: 12,
+        marginBottom: 15,
+        backgroundColor: "#252525",
+        borderWidth: 1,
+        alignSelf: "center",
     }
 })

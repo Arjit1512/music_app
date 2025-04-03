@@ -156,7 +156,14 @@ async def get_reviews():
     return {"Message":"Reviews fetched successfully!", "reviews": array}
 
 
-
+@app.get("/show-reviews/{spotifyId}")
+async def showReviews(spotifyId: str):
+    db = await get_db()
+    reviews = db["reviews"]
+    result = await reviews.find({"spotifyId": spotifyId}).to_list(length=20)
+    for review in result:
+        review["_id"] = str(review["_id"])
+    return {"Message": "Reviews fetched successfully!", "reviews" : result}
 
 
 

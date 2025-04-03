@@ -91,7 +91,7 @@ const Songs = () => {
         try {
             const response = await axios.get(`${API_URL}/reviews`);
 
-            const filteredArray = response.data.reviews.filter((item) => item.spotifyId === albumId & item.type==='album');
+            const filteredArray = response.data.reviews.filter((item) => item.spotifyId === albumId & item.type === 'album');
             if (filteredArray.length === 0) return 0;
             const sum = filteredArray.reduce((acc, item) => acc + item.stars, 0);
 
@@ -221,6 +221,16 @@ const Songs = () => {
                         </Text>
                     </View>
                 )}
+
+                {(no > 0) && (
+                    <View style={styles.col}>
+                        <Text style={styles.tr}>Top Reviews</Text>
+
+                    </View>
+
+                )}
+
+
 
                 <View style={styles.col}>
                     <Text style={styles.tr}>Tracks</Text>
@@ -379,8 +389,8 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "row",
         gap: 10,
-        alignItems:"center",
-        alignSelf:"center"
+        alignItems: "center",
+        alignSelf: "center"
     },
     ta2: {
         color: "white",
@@ -413,8 +423,8 @@ const styles = StyleSheet.create({
         width: "94%",
         alignSelf: "center",
         borderRadius: 6,
-        borderColor:"#FF6500",
-        borderWidth:0,
+        borderColor: "#FF6500",
+        borderWidth: 0,
         marginTop: 12,
         padding: 12
     },
