@@ -1,9 +1,9 @@
-import { StyleSheet, Text, View, SafeAreaView, ScrollView, StatusBar, Image } from 'react-native'
+import { StyleSheet, Text, View, SafeAreaView, ScrollView, StatusBar, Image, TouchableOpacity } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { FontAwesome } from 'react-native-vector-icons';
 import Loader from '../../components/Loader'
 import { useFonts } from 'expo-font';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 import axios from 'axios';
 import { encode } from "base-64";
 import Constants from 'expo-constants';
@@ -17,7 +17,7 @@ const Home = () => {
     const SPOTIFY_CLIENT_SECRET = Constants.expoConfig.extra.SPOTIFY_CLIENT_SECRET;
     const API_URL = Constants.expoConfig.extra.API_URL;
     // console.log('SCI: ',SPOTIFY_CLIENT_ID);
-    // console.log('API URL: ',API_URL);
+     console.log('API URL: ',API_URL);
 
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
@@ -144,7 +144,24 @@ const Home = () => {
         }, [])
     )
 
-    console.log('Feed: ',feed);
+    //console.log('Feed: ', feed);
+
+    const handleNavigate = async(type, id) => {
+        try {
+            if (type === 'album') {
+                await AsyncStorage.setItem('albumId', id);
+                router.push(`album/${id}`);
+                return;
+            }
+            else if (type === 'track') {
+                await AsyncStorage.setItem('songId', id);
+                router.push(`song/${id}`);
+                return;
+            }
+        } catch (error) {
+            console.log('Error: ', error)
+        }
+    }
 
 
     if (loading) {
@@ -162,30 +179,32 @@ const Home = () => {
                 <View style={styles.wholecol}>
                     {Array.isArray(feed) && feed.map((item, index) => {
                         return (
-                            <View style={[styles.each, { borderColor: (item.type === 'album') ? '#FF6500' : '#1DB954' }]} key={index}>
-                                <View style={styles.whitediv}>
-                                    <Image style={styles.dp} source={{ uri: item.img }}></Image>
-                                    <View style={styles.whitecoldiv}>
-                                        <Text style={styles.resultb}>{item.albumName}</Text>
-                                        <Text style={styles.p}>{item.artistName} • {item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Text>
+                            <TouchableOpacity key={index} onPress={() => handleNavigate(item.type,item.spotifyId)}>
+                                <View style={[styles.each, { borderColor: (item.type === 'album') ? '#FF6500' : '#1DB954' }]} key={index}>
+                                    <View style={styles.whitediv}>
+                                        <Image style={styles.dp} source={{ uri: item.img }}></Image>
+                                        <View style={styles.whitecoldiv}>
+                                            <Text style={styles.resultb}>{item.albumName}</Text>
+                                            <Text style={styles.p}>{item.artistName} • {item.type.charAt(0).toUpperCase() + item.type.slice(1)}</Text>
 
+                                        </View>
+                                    </View>
+                                    <View style={styles.col} key={index}>
+                                        <View style={styles.stars}>
+                                            {[...Array(5)].map((_, i) => (
+                                                <FontAwesome
+                                                    key={i}
+                                                    name={i < item.stars ? 'star' : 'star-o'}
+                                                    size={16}
+                                                    color={(item.type === 'album') ? "#FF6500" : "#1DB954"}
+                                                />
+                                            ))}
+                                        </View>
+                                        <Text style={styles.result}>{item?.comment || ''}</Text>
+                                        <Text style={styles.span}>• Posted by {item?.username} at {new Date(item.date).toLocaleDateString()}</Text>
                                     </View>
                                 </View>
-                                <View style={styles.col} key={index}>
-                                    <View style={styles.stars}>
-                                        {[...Array(5)].map((_, i) => (
-                                            <FontAwesome
-                                                key={i}
-                                                name={i < item.stars ? 'star' : 'star-o'}
-                                                size={16}
-                                                color={(item.type === 'album') ? "#FF6500" : "#1DB954"}
-                                            />
-                                        ))}
-                                    </View>
-                                    <Text style={styles.result}>{item?.comment || ''}</Text>
-                                    <Text style={styles.span}>• Posted by {item?.username} at {new Date(item.date).toLocaleDateString()}</Text>
-                                </View>
-                            </View>
+                            </TouchableOpacity>
                         )
                     })}
                 </View>

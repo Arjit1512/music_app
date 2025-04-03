@@ -81,7 +81,8 @@ const SearchPage = () => {
     }
   }
 
-  // Debounced API Call
+  // Debounced API Call: 
+  // it waits for 300ms of inactivity before executing the getArtists function. If the search value changes within those 300ms, the previous timer is cleared and reset.
   const getArtistsDebounced = useCallback(
     debounce(() => {
       console.log("Fetching artists for:", search);
