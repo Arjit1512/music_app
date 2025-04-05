@@ -6,16 +6,13 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal",
-      "excludeAssets": ["server/**/*"]
+      "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
-      "excludeAssets": ["server/**/*"]
+      "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true,
-      "excludeAssets": ["server/**/*"]
+      "autoIncrement": true
     }
   },
   "submit": {
