@@ -2,7 +2,7 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView, Scro
 import React, { useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { LinearGradient } from 'expo-linear-gradient';
+import leoProfanity from 'leo-profanity';
 import { useFonts } from 'expo-font';
 import { router, useFocusEffect } from 'expo-router';
 import { FontAwesome, AntDesign } from '@expo/vector-icons';
@@ -51,12 +51,14 @@ const rating = () => {
                 alert("Please add a rating!")
                 return;
             }
+            const cleanComment = leoProfanity.clean(comment);
+
             const response = await axios.post(`${API_URL}/${userId}/add-review/${albumId}`, {
                 spotifyId: (type === 'album') ? albumId : songId,
                 img: albumDp,
                 type: type,
                 stars: rating,
-                comment: comment || ''
+                comment: cleanComment || ''
             })
             if (response.data.Message === "Review added successfully") {
                 setComment('');

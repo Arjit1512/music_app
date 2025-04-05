@@ -14,9 +14,10 @@ const Track = () => {
 
     const { songId } = useLocalSearchParams();
     const API_URL = Constants.expoConfig.extra.API_URL;
-    console.log('SONG ID THAT WE NAVIGATED IS: ',JSON.stringify(songId));
+    console.log('SONG ID THAT WE NAVIGATED IS: ', JSON.stringify(songId));
     const [loading, setLoading] = useState(false);
     const [rating, setRating] = useState(0);
+    const [reviews, setReviews] = useState([]);
     const [no, setNo] = useState(0);
     const [song, setSong] = useState({
         name: '',
@@ -48,7 +49,7 @@ const Track = () => {
 
                     setSong({
                         name: response.data.name,
-                        id:response.data.id,
+                        id: response.data.id,
                         duration: parseFloat(response.data.duration_ms / 60000).toFixed(2),
                         pop: parseInt(response.data.popularity),
                         artistName: response.data.artists[0].name,
@@ -58,7 +59,7 @@ const Track = () => {
                     })
 
                     const ans = await getavgRatingSong()
-                    console.log('answer: ',ans)
+                    console.log('answer: ', ans)
                     setRating(ans.avg);
                     setNo(ans.no);
 
@@ -70,7 +71,27 @@ const Track = () => {
                 }
             }
 
+            const getReviews = async () => {
+                setLoading(true)
+                if (!songId) {
+                    alert("Server fault, Please try again after some time!")
+                    return;
+                }
+                try {
+                    const response = await axios.get(`${API_URL}/show-reviews/${songId}`)
+                    if (response.data.Message === "Reviews fetched successfully!") {
+                        setReviews(response.data.reviews);
+                    }
+                } catch (error) {
+                    console.log('Error: ', error)
+                    alert(error)
+                } finally {
+                    setLoading(false)
+                }
+            }
+
             getSong();
+            getReviews();
         }, [])
     )
 
@@ -124,7 +145,8 @@ const Track = () => {
     }
 
 
-    console.log('SONG: ', song)
+    // console.log('SONG: ', song)
+    console.log('Reviews: ', reviews);
 
     if (loading) {
         return (
@@ -166,6 +188,39 @@ const Track = () => {
                             </Text>
                         </View>
                     )}
+
+                    {(no > 0) && (
+                        <View style={styles.col}>
+                            <Text style={styles.tr}>Top Reviews</Text>
+                            {reviews.map((item, index) => {
+                                return (
+                                    <View style={styles.row} key={index}>
+                                        {/* <Image style={styles.dp} source={{ uri: item.img }}></Image> */}
+
+                                        <View style={styles.col} key={index}>
+                                            <View style={styles.stars}>
+                                                {[...Array(5)].map((_, i) => (
+                                                    <FontAwesome
+                                                        key={i}
+                                                        name={i < item.stars ? 'star' : 'star-o'}
+                                                        size={16}
+                                                        color={"#1DB954"}
+                                                    />
+                                                ))}
+                                            </View>
+                                            <Text style={styles.result}>{item?.comment || ''}</Text>
+                                            <Text style={styles.spanx}>• Posted by {item?.username} at {new Date(item.date).toLocaleDateString()}</Text>
+                                        </View>
+                                    </View>
+                                )
+                            })}
+                        </View>
+
+                    )}
+
+
+
+
                     <View style={styles.songInfoContainer}>
                         <Text style={styles.songText}>Name: <Text style={styles.span}> {song?.name}</Text></Text>
                         <Text style={styles.songText}>Duration: <Text style={styles.span}> {song?.duration}min</Text></Text>
@@ -304,7 +359,7 @@ const styles = StyleSheet.create({
         color: "rgba(255, 255, 255, 0.7)",
         fontFamily: "OpenSans",
         fontSize: 15,
-        letterSpacing: 0.3
+        letterSpacing: 0.3,
     },
     btntext2: {
         fontSize: 16,
@@ -362,5 +417,111 @@ const styles = StyleSheet.create({
         color: "grey",
         fontSize: 13,
         fontFamily: "OpenSans-Italic"
+    },
+
+
+    //reviews section
+    col: {
+        flexDirection: 'column',
+        alignItems: 'left',
+        justifyContent: 'space-between',
+        backgroundColor: '#151515',
+        width: "100%",
+        padding: 8,
+        marginTop: 10
+    },
+    tr: {
+        color: "white",
+        fontFamily: 'OpenSans-Bold',
+        textAlign: "left",
+        fontSize: 20,
+        marginVertical: 10
+    },
+    each: {
+        borderRadius: 12,
+        padding: 10,
+        marginBottom: 15,
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "#252525",
+        width: "100%",
+        borderWidth: 0.2,
+        alignSelf: "center",
+    },
+
+    stars: {
+        display: "flex",
+        flexDirection: "row",
+        marginTop: 10,
+        paddingHorizontal:16,
+    },
+    col: {
+        display: "flex",
+        flexDirection: "column",
+        marginLeft:0,
+        justifyContent: "center",
+        flex: 1,
+    },
+    result: {
+        color: '#E2DFD0',
+        fontSize: 12,
+        paddingVertical: 6,
+        paddingHorizontal:16,
+        lineHeight: 18,
+    },
+    resultb: {
+        color: 'white',
+        fontSize: 12,
+        width: "90%",
+        fontFamily: "OpenSans-Bold",
+        paddingVertical: 5,
+        lineHeight: 18,
+    },
+    p: {
+        color: 'grey',
+        fontSize: 12,
+        paddingVertical: 5,
+        lineHeight: 18,
+    },
+    dp: {
+        width: 55,
+        height: 55,
+        borderRadius: 6,
+        marginLeft: 6,
+        borderWidth: 1,
+        borderColor: "grey",
+        marginVertical: 6
+    },
+    whitediv: {
+        backgroundColor: "#414141",
+        borderRadius: 6,
+        display: "flex",
+        flexDirection: "row",
+        borderWidth: 0.2,
+
+    },
+    whitecoldiv: {
+        display: "flex",
+        flexDirection: "column",
+        marginLeft: 12,
+    },
+    spanx: {
+        fontSize: 10,
+        color: "grey",
+        marginTop: 6,
+        fontStyle: "italic"
+    },
+    row:{
+        display: "flex",
+        flexDirection: "row",
+        borderRadius: 12,
+        padding: 10,
+        marginBottom: 15,
+        backgroundColor: "#252525",
+        width: "100%",
+        borderWidth: 0.2,
+        alignSelf: "center",
+        alignItems:"center",
+        justifyContent:"center"
     }
 });                                                     

@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, SafeAreaView, ScrollView, StatusBar, Image, TouchableOpacity, Linking } from 'react-native'
 import React, { useState, useEffect } from 'react'
+import { Pressable, TouchableWithoutFeedback } from 'react-native';
 import { FontAwesome } from 'react-native-vector-icons';
 import Loader from '../../components/Loader'
 import { useFonts } from 'expo-font';
@@ -175,12 +176,12 @@ const Home = () => {
         <SafeAreaView style={styles.container}>
             <ScrollView>
                 <StatusBar barStyle="light-content" backgroundColor="#151515" />
-                <Text style={styles.ta}>Feed</Text>
+                <Text style={styles.ta}>Musicboard</Text>
                 <View style={styles.wholecol}>
                     {Array.isArray(feed) && feed.map((item, index) => {
                         return (
-                            <View>
-                                <TouchableOpacity key={index} onPress={() => handleNavigate(item.type, item.spotifyId)}>
+                            <View key={index} >
+                                <TouchableOpacity onPress={() => handleNavigate(item.type, item.spotifyId)}>
                                     <View style={[styles.each, { borderColor: (item.type === 'album') ? '#FF6500' : '#1DB954' }]} key={index}>
                                         <View style={[styles.whitediv]}>
                                             <Image style={styles.dp} source={{ uri: item.img }}></Image>
@@ -202,7 +203,9 @@ const Home = () => {
                                                 ))}
                                             </View>
                                             <Text style={styles.result}>{item?.comment || ''}</Text>
+                                            {/* <TouchableWithoutFeedback onPress={()=> router.push("/otherprofile")}> */}
                                             <Text style={styles.span}>• Posted by {item?.username} at {new Date(item.date).toLocaleDateString()}</Text>
+                                            {/* </TouchableWithoutFeedback> */}
                                         </View>
                                     </View>
                                 </TouchableOpacity>

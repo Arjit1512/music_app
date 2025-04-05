@@ -15,6 +15,7 @@ const Songs = () => {
     const { albumId } = useLocalSearchParams();
     const API_URL = Constants.expoConfig.extra.API_URL;
     const [songs, setSongs] = useState([]);
+    const [reviews, setReviews] = useState([]);
     const [rating, setRating] = useState(0);
     const [no, setNo] = useState(0);
     const [albumInfo, setAlbumInfo] = useState({});
@@ -68,7 +69,27 @@ const Songs = () => {
                 }
             }
 
+            const getReviews = async () => {
+                setLoading(true)
+                if (!albumId) {
+                    alert("Server fault, Please try again after some time!")
+                    return;
+                }
+                try {
+                    const response = await axios.get(`${API_URL}/show-reviews/${albumId}`)
+                    if (response.data.Message === "Reviews fetched successfully!") {
+                        setReviews(response.data.reviews);
+                    }
+                } catch (error) {
+                    console.log('Error: ', error)
+                    alert(error)
+                } finally {
+                    setLoading(false)
+                }
+            }
+
             getSongs();
+            getReviews();
         }, [])
     )
 
@@ -223,9 +244,30 @@ const Songs = () => {
                 )}
 
                 {(no > 0) && (
-                    <View style={styles.col}>
+                    <View style={styles.col1}>
                         <Text style={styles.tr}>Top Reviews</Text>
+                        {reviews.map((item, index) => {
+                            return (
+                                <View style={styles.row} key={index}>
+                                    {/* <Image style={styles.dp} source={{ uri: item.img }}></Image> */}
 
+                                    <View style={[styles.col1,{paddingHorizontal:0}]} key={index}>
+                                        <View style={styles.stars}>
+                                            {[...Array(5)].map((_, i) => (
+                                                <FontAwesome
+                                                    key={i}
+                                                    name={i < item.stars ? 'star' : 'star-o'}
+                                                    size={16}
+                                                    color={"#FF6500"}
+                                                />
+                                            ))}
+                                        </View>
+                                        <Text style={styles.result}>{item?.comment || ''}</Text>
+                                        <Text style={styles.spanx}>• Posted by {item?.username} at {new Date(item.date).toLocaleDateString()}</Text>
+                                    </View>
+                                </View>
+                            )
+                        })}
                     </View>
 
                 )}
@@ -324,7 +366,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         backgroundColor: '#151515',
         width: "100%",
-        padding: 8
+        padding: 8,
+        marginTop:-12
     },
     eachcol: {
         backgroundColor: "black",
@@ -518,5 +561,92 @@ const styles = StyleSheet.create({
         color: "grey",
         fontSize: 13,
         fontFamily: "OpenSans-Italic"
+    },
+    //reviews section
+    tr: {
+        color: "white",
+        fontFamily: 'OpenSans-Bold',
+        textAlign: "left",
+        fontSize: 20,
+        marginVertical: 10
+    },
+    each: {
+        borderRadius: 12,
+        padding: 10,
+        marginBottom: 15,
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "#252525",
+        width: "100%",
+        borderWidth: 0.2,
+        alignSelf: "center",
+    },
+
+    stars: {
+        display: "flex",
+        flexDirection: "row",
+        marginTop: 10,
+        paddingHorizontal: 16,
+    },
+    col1: {
+        display: "flex",
+        flexDirection: "column",
+        marginLeft: 0,
+        paddingHorizontal:12,
+        justifyContent: "center",
+        flex: 1,
+    },
+    result: {
+        color: '#E2DFD0',
+        fontSize: 12,
+        paddingVertical: 6,
+        paddingHorizontal: 16,
+        lineHeight: 18,
+    },
+    resultb: {
+        color: 'white',
+        fontSize: 12,
+        width: "90%",
+        fontFamily: "OpenSans-Bold",
+        paddingVertical: 5,
+        lineHeight: 18,
+    },
+    p: {
+        color: 'grey',
+        fontSize: 12,
+        paddingVertical: 5,
+        lineHeight: 18,
+    },
+    whitediv: {
+        backgroundColor: "#414141",
+        borderRadius: 6,
+        display: "flex",
+        flexDirection: "row",
+        borderWidth: 0.2,
+
+    },
+    whitecoldiv: {
+        display: "flex",
+        flexDirection: "column",
+        marginLeft: 12,
+    },
+    spanx: {
+        fontSize: 10,
+        color: "grey",
+        marginTop: 6,
+        fontStyle: "italic"
+    },
+    row: {
+        display: "flex",
+        flexDirection: "row",
+        borderRadius: 12,
+        padding: 10,
+        marginBottom: 15,
+        backgroundColor: "#252525",
+        width: "100%",
+        borderWidth: 0.2,
+        alignSelf: "center",
+        alignItems: "center",
+        justifyContent: "center"
     }
 })
