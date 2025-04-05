@@ -7,24 +7,15 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "android": {
-        "gradleCommand": ":app:assembleDebug"
-      },
-      "ios": {
-        "buildConfiguration": "Debug"
-      },
-      "env": {
-        "ENVIRONMENT": "development"
-      }
+      "excludeAssets": ["server/**/*"]
     },
     "preview": {
       "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      }
+      "excludeAssets": ["server/**/*"]
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "excludeAssets": ["server/**/*"]
     }
   },
   "submit": {
