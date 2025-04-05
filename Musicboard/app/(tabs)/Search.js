@@ -41,7 +41,7 @@ const SearchPage = () => {
   const getArtists = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      console.log('Token for searching is: ',token);
+      console.log('Token for searching is: ', token);
       if (!search || !token) return;
       const response = await axios.get(`https://api.spotify.com/v1/search?q=${search}&type=artist,album,track`, {
         headers: {
@@ -88,15 +88,19 @@ const SearchPage = () => {
       console.log("Fetching artists for:", search);
       getArtists();
     }, 300),
-    [search] // Dependency array ensures proper debouncing
+    [search, option] // Dependency array ensures proper debouncing
   );
 
   useEffect(() => {
     if (search.length > 0) {
       getArtistsDebounced();
     }
-    return () => getArtistsDebounced.cancel(); // Cleanup
-  }, [search]);
+    return () => {
+      if (getArtistsDebounced.cancel) {
+        getArtistsDebounced.cancel();
+      }
+    }; // Proper cleanup
+  }, [search, getArtistsDebounced]);
 
 
   const handleChange = async () => {
@@ -178,7 +182,7 @@ const SearchPage = () => {
             return (
               <View style={styles.flexcol} key={index}>
                 <TouchableOpacity style={styles.row} onPress={() => handlePressSong(item.id, item.dp)}>
-                  <Image source={{ uri: item.dp }} style={styles.image} />
+                  <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
                   <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
                   <ChevronRight size={20} color="orange" />
                 </TouchableOpacity>
@@ -265,7 +269,7 @@ const styles = StyleSheet.create({
     color: 'white',
     width: 310,
     backgroundColor: "black",
-    height: Platform.OS==='ios' ? 30: 38,
+    height: Platform.OS === 'ios' ? 30 : 38,
     borderRadius: 10
   },
   cancel: {
