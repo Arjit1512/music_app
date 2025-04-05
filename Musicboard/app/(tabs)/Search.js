@@ -1,4 +1,4 @@
-import { StyleSheet, StatusBar, Text, TextInput, View, SafeAreaView, Image, ScrollView, TouchableOpacity, Platform } from 'react-native'
+import { StyleSheet, StatusBar, Text, TextInput, View, SafeAreaView, Image, ScrollView, TouchableOpacity, Platform, Alert } from 'react-native'
 import React, { useEffect, useState, useCallback } from 'react'
 import axios from 'axios';
 import { useFonts } from 'expo-font';
@@ -45,7 +45,10 @@ const SearchPage = () => {
     try {
       const token = await AsyncStorage.getItem("token");
       console.log('Token for searching is: ', token);
-      if (!search || !token) return;
+      if (!search || !token){
+        console.log("Missing search query or token")
+        return;
+      } 
       const response = await axios.get(`https://api.spotify.com/v1/search?q=${search}&type=artist,album,track`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -81,6 +84,10 @@ const SearchPage = () => {
       setArtists(artistsArray)
     } catch (error) {
       console.log('Error: ', error)
+      Alert.alert(
+        "Search Error",
+        error?.response?.data?.error?.message || error?.message || "Something went wrong while searching."
+      );
     }
   }
 
