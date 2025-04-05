@@ -37,6 +37,9 @@ const SearchPage = () => {
     "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
   })
 
+  if (!fontsLoaded) {
+    return <Loader />
+  }
 
   const getArtists = async () => {
     try {
@@ -143,100 +146,117 @@ const SearchPage = () => {
     handleChange();
   }, [option])
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <StatusBar barStyle="light-content" backgroundColor="#151515" />
-        <View style={searchPressed ? styles.sdiv : styles.searchdiv} onChange={handleChange}>
-          <TextInput style={styles.bar} onPress={() => setSearchPressed(true)}
-            onChangeText={async (text) => { setSearch(text) }} value={search} placeholder=' search' placeholderTextColor='#888' textAlignVertical="center" ></TextInput>
-          {searchPressed && (
-            <View style={styles.cancel} >
-              <Text style={{ color: "grey" }} onPress={() => { setSearchPressed(false), setSearch('') }} >cancel</Text>
-            </View>
-          )}
-        </View>
-        <View>
-          {searchPressed && (
-            <View style={styles.div}>
-              <TouchableOpacity onPress={() => handleClick('tracks')}>
-                <View style={[styles.bxContainer, option === 'tracks' && styles.active]}>
-                  <Text style={styles.bx}>Tracks</Text>
-                </View>
-              </TouchableOpacity>
+  try {
+    return (
+      <SafeAreaView style={styles.container}>
+        {/* All your JSX */}
+      </SafeAreaView>
+    );
+  } catch (error) {
+    console.log('Rendering error:', error);
+    Alert.alert("Something went wrong", error?.message || "An unknown error occurred");
+    return <Text style={{ padding: 10, color: 'red' }}>Error occurred</Text>;
+  }
 
-              <TouchableOpacity onPress={() => handleClick('albums')}>
-                <View style={[styles.bxContainer, option === 'albums' && styles.active]}>
-                  <Text style={styles.bx}>Albums</Text>
-                </View>
-              </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => handleClick('artists')}>
-                <View style={[styles.bxContainer, option === 'artists' && styles.active]}>
-                  <Text style={styles.bx}>Artists</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          )}
-          {(searchPressed && tracks.length > 1) && (tracks?.map((item, index) => {
-            return (
-              <View style={styles.flexcol} key={index}>
-                <TouchableOpacity style={styles.row} onPress={() => handlePressSong(item.id, item.dp)}>
-                  <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
-                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
-                  <ChevronRight size={20} color="orange" />
-                </TouchableOpacity>
-              </View>
-            )
-          }))}
-          {(searchPressed && albums.length > 1) && (albums?.map((item, index) => {
-            return (
-              <View style={styles.flexcol} key={index}>
-                <TouchableOpacity style={styles.row} onPress={() => handlePressAlbum(item.id, item.dp)}>
-                  <Image source={{ uri: item.dp }} style={styles.image} />
-                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
-                  <ChevronRight size={20} color="orange" />
-                </TouchableOpacity>
-              </View>
-            )
-          }))}
-          {(searchPressed) ? (artists?.map((item, index) => {
-            return (
-              <View style={styles.flexcol} key={index}>
-                <TouchableOpacity style={styles.row} onPress={() => handlePress(item.id, item.dp)}>
-                  <Image source={{ uri: item.dp }} style={styles.image} />
-                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
-                  <ChevronRight size={20} color="orange" />
-                </TouchableOpacity>
-              </View>
-            )
-          })) : (
-            <View>
-              <View>
-                <Text style={styles.heading}>Top Genres</Text>
-                <View style={styles.container2}>
-                  <Image style={styles.mainimg} source={require("../../assets/images/image3.png")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/image.png")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/image2.png")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/image1.png")}></Image>
-                </View>
-              </View>
-              <View>
-                <Text style={styles.heading}>Most Popular Artists</Text>
-                <View style={styles.container2}>
-                  <Image style={styles.mainimg} source={require("../../assets/images/klamar.jpeg")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/swift.jpeg")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/weeknd.jpg")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/ts.jpeg")}></Image>
-                </View>
-              </View>
-            </View>
-          )
-          }
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  )
+
+
+
+
+  // return (
+  //   <SafeAreaView style={styles.container}>
+  //     <ScrollView>
+  //       <StatusBar barStyle="light-content" backgroundColor="#151515" />
+  //       <View style={searchPressed ? styles.sdiv : styles.searchdiv} onChange={handleChange}>
+  //         <TextInput style={styles.bar} onPress={() => setSearchPressed(true)}
+  //           onChangeText={async (text) => { setSearch(text) }} value={search} placeholder=' search' placeholderTextColor='#888' textAlignVertical="center" ></TextInput>
+  //         {searchPressed && (
+  //           <View style={styles.cancel} >
+  //             <Text style={{ color: "grey" }} onPress={() => { setSearchPressed(false), setSearch('') }} >cancel</Text>
+  //           </View>
+  //         )}
+  //       </View>
+  //       <View>
+  //         {searchPressed && (
+  //           <View style={styles.div}>
+  //             <TouchableOpacity onPress={() => handleClick('tracks')}>
+  //               <View style={[styles.bxContainer, option === 'tracks' && styles.active]}>
+  //                 <Text style={styles.bx}>Tracks</Text>
+  //               </View>
+  //             </TouchableOpacity>
+
+  //             <TouchableOpacity onPress={() => handleClick('albums')}>
+  //               <View style={[styles.bxContainer, option === 'albums' && styles.active]}>
+  //                 <Text style={styles.bx}>Albums</Text>
+  //               </View>
+  //             </TouchableOpacity>
+
+  //             <TouchableOpacity onPress={() => handleClick('artists')}>
+  //               <View style={[styles.bxContainer, option === 'artists' && styles.active]}>
+  //                 <Text style={styles.bx}>Artists</Text>
+  //               </View>
+  //             </TouchableOpacity>
+  //           </View>
+  //         )}
+  //         {(searchPressed && tracks.length > 1) && (tracks?.map((item, index) => {
+  //           return (
+  //             <View style={styles.flexcol} key={index}>
+  //               <TouchableOpacity style={styles.row} onPress={() => handlePressSong(item.id, item.dp)}>
+  //                 <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
+  //                 <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+  //                 <ChevronRight size={20} color="orange" />
+  //               </TouchableOpacity>
+  //             </View>
+  //           )
+  //         }))}
+  //         {(searchPressed && albums.length > 1) && (albums?.map((item, index) => {
+  //           return (
+  //             <View style={styles.flexcol} key={index}>
+  //               <TouchableOpacity style={styles.row} onPress={() => handlePressAlbum(item.id, item.dp)}>
+  //                 <Image source={{ uri: item.dp }} style={styles.image} />
+  //                 <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+  //                 <ChevronRight size={20} color="orange" />
+  //               </TouchableOpacity>
+  //             </View>
+  //           )
+  //         }))}
+  //         {(searchPressed) ? (artists?.map((item, index) => {
+  //           return (
+  //             <View style={styles.flexcol} key={index}>
+  //               <TouchableOpacity style={styles.row} onPress={() => handlePress(item.id, item.dp)}>
+  //                 <Image source={{ uri: item.dp }} style={styles.image} />
+  //                 <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+  //                 <ChevronRight size={20} color="orange" />
+  //               </TouchableOpacity>
+  //             </View>
+  //           )
+  //         })) : (
+  //           <View>
+  //             <View>
+  //               <Text style={styles.heading}>Top Genres</Text>
+  //               <View style={styles.container2}>
+  //                 <Image style={styles.mainimg} source={require("../../assets/images/image3.png")}></Image>
+  //                 <Image style={styles.mainimg} source={require("../../assets/images/image.png")}></Image>
+  //                 <Image style={styles.mainimg} source={require("../../assets/images/image2.png")}></Image>
+  //                 <Image style={styles.mainimg} source={require("../../assets/images/image1.png")}></Image>
+  //               </View>
+  //             </View>
+  //             <View>
+  //               <Text style={styles.heading}>Most Popular Artists</Text>
+  //               <View style={styles.container2}>
+  //                 <Image style={styles.mainimg} source={require("../../assets/images/klamar.jpeg")}></Image>
+  //                 <Image style={styles.mainimg} source={require("../../assets/images/swift.jpeg")}></Image>
+  //                 <Image style={styles.mainimg} source={require("../../assets/images/weeknd.jpg")}></Image>
+  //                 <Image style={styles.mainimg} source={require("../../assets/images/ts.jpeg")}></Image>
+  //               </View>
+  //             </View>
+  //           </View>
+  //         )
+  //         }
+  //       </View>
+  //     </ScrollView>
+  //   </SafeAreaView>
+  // )
 }
 
 export default SearchPage
