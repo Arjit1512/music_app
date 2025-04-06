@@ -43,6 +43,9 @@ const SearchPage = () => {
     try {
       const token = await AsyncStorage.getItem("token");
       console.log('Token for searching is: ', token);
+      let artistsArray = [];
+      let tracksArray = [];
+      let albumsArray = [];
       if (!search || !token) {
         console.log("Missing search query or token")
         return;
@@ -53,7 +56,6 @@ const SearchPage = () => {
         }
       });
 
-      let artistsArray = [];
       if (option === 'artists') {
         artistsArray = response.data.artists?.items?.map((item) => ({
           name: item.name,
@@ -61,16 +63,14 @@ const SearchPage = () => {
           dp: item.images[0]?.url || null
         })) || [];
       }
-      let tracksArray = [];
-      if (option === 'tracks') {
+      else if (option === 'tracks') {
         tracksArray = response.data.tracks?.items?.map((item) => ({
           name: item.name,
           id: item.id,
           dp: item.album?.images[0]?.url || null
         })) || [];
       }
-      let albumsArray = [];
-      if (option === 'albums') {
+      else if (option === 'albums') {
         albumsArray = response.data.albums?.items?.map((item) => ({
           name: item.name,
           id: item.id,
@@ -104,7 +104,7 @@ const SearchPage = () => {
   const getArtistsDebounced = useCallback(
     debounce(() => {
       console.log("Fetching artists for:", search);
-      getArtists();
+      if(search.length > 0)getArtists();
     }, 300),
     [search, option] // Dependency array ensures proper debouncing
   );
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     paddingBottom: "5%"
   },
   mainimg: {
-    width: 180,
+    width: 170,
     height: 120,
     borderRadius: 20,
     marginTop: "5%"
