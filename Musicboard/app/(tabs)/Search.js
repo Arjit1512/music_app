@@ -2,9 +2,9 @@ import { StyleSheet, StatusBar, Text, TextInput, View, SafeAreaView, Image, Scro
 import React, { useEffect, useState, useCallback } from 'react'
 import axios from 'axios';
 import { useFonts } from 'expo-font';
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import Constants from 'expo-constants';
-import { ChevronRight, FileArchive, Search } from 'lucide-react-native';
+import { ChevronRight } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Loader from '../../components/Loader';
 import { debounce } from 'lodash';
@@ -96,7 +96,7 @@ const SearchPage = () => {
       }
 
       Alert.alert("Search Error", errorMessage);
-    } 
+    }
   }
 
   // Debounced API Call: 
@@ -157,6 +157,8 @@ const SearchPage = () => {
     }
   }
 
+
+
   useEffect(() => {
     handleChange();
   }, [option])
@@ -179,84 +181,96 @@ const SearchPage = () => {
             </View>
           )}
         </View>
-          <View>
-            {searchPressed && (
-              <View style={styles.div}>
-                <TouchableOpacity onPress={() => handleClick('tracks')}>
-                  <View style={[styles.bxContainer, option === 'tracks' && styles.active]}>
-                    <Text style={styles.bx}>Tracks</Text>
-                  </View>
-                </TouchableOpacity>
+        <View>
+          {searchPressed && (
+            <View style={styles.div}>
+              <TouchableOpacity onPress={() => handleClick('tracks')}>
+                <View style={[styles.bxContainer, option === 'tracks' && styles.active]}>
+                  <Text style={styles.bx}>Tracks</Text>
+                </View>
+              </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => handleClick('albums')}>
-                  <View style={[styles.bxContainer, option === 'albums' && styles.active]}>
-                    <Text style={styles.bx}>Albums</Text>
-                  </View>
-                </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleClick('albums')}>
+                <View style={[styles.bxContainer, option === 'albums' && styles.active]}>
+                  <Text style={styles.bx}>Albums</Text>
+                </View>
+              </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => handleClick('artists')}>
-                  <View style={[styles.bxContainer, option === 'artists' && styles.active]}>
-                    <Text style={styles.bx}>Artists</Text>
-                  </View>
+              <TouchableOpacity onPress={() => handleClick('artists')}>
+                <View style={[styles.bxContainer, option === 'artists' && styles.active]}>
+                  <Text style={styles.bx}>Artists</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
+          {(searchPressed && tracks.length > 1) && (tracks?.map((item, index) => {
+            return (
+              <View style={styles.flexcol} key={index}>
+                <TouchableOpacity style={styles.row} onPress={() => handlePressSong(item.id, item.dp)}>
+                  <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
+                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+                  <ChevronRight size={20} color="orange" />
                 </TouchableOpacity>
-              </View>
-            )}
-            {(searchPressed && tracks.length > 1) && (tracks?.map((item, index) => {
-              return (
-                <View style={styles.flexcol} key={index}>
-                  <TouchableOpacity style={styles.row} onPress={() => handlePressSong(item.id, item.dp)}>
-                    <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
-                    <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
-                    <ChevronRight size={20} color="orange" />
-                  </TouchableOpacity>
-                </View>
-              )
-            }))}
-            {(searchPressed && albums.length > 1) && (albums?.map((item, index) => {
-              return (
-                <View style={styles.flexcol} key={index}>
-                  <TouchableOpacity style={styles.row} onPress={() => handlePressAlbum(item.id, item.dp)}>
-                    <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
-                    <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
-                    <ChevronRight size={20} color="orange" />
-                  </TouchableOpacity>
-                </View>
-              )
-            }))}
-            {(searchPressed) ? (artists?.map((item, index) => {
-              return (
-                <View style={styles.flexcol} key={index}>
-                  <TouchableOpacity style={styles.row} onPress={() => handlePress(item.id, item.dp)}>
-                    <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
-                    <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
-                    <ChevronRight size={20} color="orange" />
-                  </TouchableOpacity>
-                </View>
-              )
-            })) : (
-              <View>
-                <View>
-                  <Text style={styles.heading}>Top Genres</Text>
-                  <View style={styles.container2}>
-                    <Image style={styles.mainimg} source={require("../../assets/images/image3.png")}></Image>
-                    <Image style={styles.mainimg} source={require("../../assets/images/image.png")}></Image>
-                    <Image style={styles.mainimg} source={require("../../assets/images/image2.png")}></Image>
-                    <Image style={styles.mainimg} source={require("../../assets/images/image1.png")}></Image>
-                  </View>
-                </View>
-                <View>
-                  <Text style={styles.heading}>Most Popular Artists</Text>
-                  <View style={styles.container2}>
-                    <Image style={styles.mainimg} source={require("../../assets/images/klamar.jpeg")}></Image>
-                    <Image style={styles.mainimg} source={require("../../assets/images/swift.jpeg")}></Image>
-                    <Image style={styles.mainimg} source={require("../../assets/images/weeknd.jpg")}></Image>
-                    <Image style={styles.mainimg} source={require("../../assets/images/ts.jpeg")}></Image>
-                  </View>
-                </View>
               </View>
             )
-            }
-          </View>
+          }))}
+          {(searchPressed && albums.length > 1) && (albums?.map((item, index) => {
+            return (
+              <View style={styles.flexcol} key={index}>
+                <TouchableOpacity style={styles.row} onPress={() => handlePressAlbum(item.id, item.dp)}>
+                  <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
+                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+                  <ChevronRight size={20} color="orange" />
+                </TouchableOpacity>
+              </View>
+            )
+          }))}
+          {(searchPressed && artists.length > 1) ? (artists?.map((item, index) => {
+            return (
+              <View style={styles.flexcol} key={index}>
+                <TouchableOpacity style={styles.row} onPress={() => handlePress(item.id, item.dp)}>
+                  <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
+                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+                  <ChevronRight size={20} color="orange" />
+                </TouchableOpacity>
+              </View>
+            )
+          })) : (
+            <View>
+              <View>
+                <Text style={styles.heading}>Top Genres</Text>
+                <View style={styles.container2}>
+                  <Image style={styles.mainimg} source={require("../../assets/images/image3.png")}></Image>
+                  <Image style={styles.mainimg} source={require("../../assets/images/image.png")}></Image>
+                  <Image style={styles.mainimg} source={require("../../assets/images/image2.png")}></Image>
+                  <Image style={styles.mainimg} source={require("../../assets/images/image1.png")}></Image>
+                </View>
+              </View>
+              <View>
+                <Text style={styles.heading}>Most Popular Artists</Text>
+
+                <View style={styles.flexwrap}>
+                  <TouchableOpacity onPress={() => handlePress('2YZyLoL8N0Wb9xBt1NhZWg', 'https://i.scdn.co/image/ab6761610000e5eb39ba6dcd4355c03de0b50918')}>
+                    <Image source={require('../../assets/images/klamar.jpeg')} style={styles.mainimg} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => handlePress('06HL4z0CvFAxyc27GXpf02', 'https://i.scdn.co/image/ab6761610000e5ebe672b5f553298dcdccb0e676')}>
+                    <Image style={styles.mainimg} source={require("../../assets/images/swift.jpeg")} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => handlePress('1Xyo4u8uXC1ZmMpatF05PJ', 'https://i.scdn.co/image/ab6761610000e5eb9e528993a2820267b97f6aae')}>
+                    <Image style={styles.mainimg} source={require("../../assets/images/weeknd.jpg")} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => handlePress('0Y5tJX1MQlPlqiwlOH1tJY', 'https://i.scdn.co/image/ab6761610000e5eb19c2790744c792d05570bb71')}>
+                    <Image style={styles.mainimg} source={require("../../assets/images/ts.jpeg")} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )
+          }
+        </View>
       </ScrollView>
     </SafeAreaView>
   )
@@ -337,6 +351,11 @@ const styles = StyleSheet.create({
     fontFamily: "OpenSans-Bold",
     fontWeight: "700"
   },
+  flexwrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap:15
+  },
   container2: {
     display: "flex",
     flexDirection: 'row',
@@ -346,7 +365,7 @@ const styles = StyleSheet.create({
     paddingBottom: "5%"
   },
   mainimg: {
-    width: "45%",
+    width: 180,
     height: 120,
     borderRadius: 20,
     marginTop: "5%"
