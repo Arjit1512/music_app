@@ -6,7 +6,7 @@ import { router, useFocusEffect } from 'expo-router';
 import Constants from 'expo-constants';
 import { ChevronRight, FileArchive, Search } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Loader from '../../components/Loader'
+import Loader from '../../components/Loader';
 import { debounce } from 'lodash';
 
 
@@ -37,16 +37,16 @@ const SearchPage = () => {
     "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
   })
 
-  
+
 
   const getArtists = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
       console.log('Token for searching is: ', token);
-      if (!search || !token){
+      if (!search || !token) {
         console.log("Missing search query or token")
         return;
-      } 
+      }
       const response = await axios.get(`https://api.spotify.com/v1/search?q=${search}&type=artist,album,track`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -82,11 +82,21 @@ const SearchPage = () => {
       setArtists(artistsArray)
     } catch (error) {
       console.log('Error: ', error)
-      Alert.alert(
-        "Search Error",
-        error?.response?.data?.error?.message || error?.message || "Something went wrong while searching."
-      );
-    }
+      if (option === 'tracks') setTracks([]);
+      if (option === 'albums') setAlbums([]);
+      if (option === 'artists') setArtists([]);
+
+      let errorMessage = "Something went wrong while searching.";
+      if (error.response) {
+        errorMessage = error.response.data?.error?.message || errorMessage;
+      } else if (error.request) {
+        errorMessage = "Network error. Please check your connection.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      Alert.alert("Search Error", errorMessage);
+    } 
   }
 
   // Debounced API Call: 
@@ -155,98 +165,98 @@ const SearchPage = () => {
     return <Loader />
   }
 
-  
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <StatusBar barStyle="light-content" backgroundColor="#151515" />
         <View style={searchPressed ? styles.sdiv : styles.searchdiv} onChange={handleChange}>
           <TextInput style={styles.bar} onFocus={() => setSearchPressed(true)}
-           onChangeText={(text) => setSearch(text)} value={search} placeholder=' search' placeholderTextColor='#888' textAlignVertical="center" ></TextInput>
+            onChangeText={(text) => setSearch(text)} value={search} placeholder=' search' placeholderTextColor='#888' textAlignVertical="center" ></TextInput>
           {searchPressed && (
             <View style={styles.cancel} >
               <Text style={{ color: "grey" }} onPress={() => { setSearchPressed(false); setSearch('') }} >cancel</Text>
             </View>
           )}
         </View>
-        <View>
-          {searchPressed && (
-            <View style={styles.div}>
-              <TouchableOpacity onPress={() => handleClick('tracks')}>
-                <View style={[styles.bxContainer, option === 'tracks' && styles.active]}>
-                  <Text style={styles.bx}>Tracks</Text>
-                </View>
-              </TouchableOpacity>
+          <View>
+            {searchPressed && (
+              <View style={styles.div}>
+                <TouchableOpacity onPress={() => handleClick('tracks')}>
+                  <View style={[styles.bxContainer, option === 'tracks' && styles.active]}>
+                    <Text style={styles.bx}>Tracks</Text>
+                  </View>
+                </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => handleClick('albums')}>
-                <View style={[styles.bxContainer, option === 'albums' && styles.active]}>
-                  <Text style={styles.bx}>Albums</Text>
-                </View>
-              </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleClick('albums')}>
+                  <View style={[styles.bxContainer, option === 'albums' && styles.active]}>
+                    <Text style={styles.bx}>Albums</Text>
+                  </View>
+                </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => handleClick('artists')}>
-                <View style={[styles.bxContainer, option === 'artists' && styles.active]}>
-                  <Text style={styles.bx}>Artists</Text>
+                <TouchableOpacity onPress={() => handleClick('artists')}>
+                  <View style={[styles.bxContainer, option === 'artists' && styles.active]}>
+                    <Text style={styles.bx}>Artists</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
+            {(searchPressed && tracks.length > 1) && (tracks?.map((item, index) => {
+              return (
+                <View style={styles.flexcol} key={index}>
+                  <TouchableOpacity style={styles.row} onPress={() => handlePressSong(item.id, item.dp)}>
+                    <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
+                    <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+                    <ChevronRight size={20} color="orange" />
+                  </TouchableOpacity>
                 </View>
-              </TouchableOpacity>
-            </View>
-          )}
-          {(searchPressed && tracks.length > 1) && (tracks?.map((item, index) => {
-            return (
-              <View style={styles.flexcol} key={index}>
-                <TouchableOpacity style={styles.row} onPress={() => handlePressSong(item.id, item.dp)}>
-                  <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
-                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
-                  <ChevronRight size={20} color="orange" />
-                </TouchableOpacity>
-              </View>
-            )
-          }))}
-          {(searchPressed && albums.length > 1) && (albums?.map((item, index) => {
-            return (
-              <View style={styles.flexcol} key={index}>
-                <TouchableOpacity style={styles.row} onPress={() => handlePressAlbum(item.id, item.dp)}>
-                  <Image source={{ uri: item.dp }} style={styles.image} />
-                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
-                  <ChevronRight size={20} color="orange" />
-                </TouchableOpacity>
-              </View>
-            )
-          }))}
-          {(searchPressed) ? (artists?.map((item, index) => {
-            return (
-              <View style={styles.flexcol} key={index}>
-                <TouchableOpacity style={styles.row} onPress={() => handlePress(item.id, item.dp)}>
-                  <Image source={{ uri: item.dp }} style={styles.image} />
-                  <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
-                  <ChevronRight size={20} color="orange" />
-                </TouchableOpacity>
-              </View>
-            )
-          })) : (
-            <View>
+              )
+            }))}
+            {(searchPressed && albums.length > 1) && (albums?.map((item, index) => {
+              return (
+                <View style={styles.flexcol} key={index}>
+                  <TouchableOpacity style={styles.row} onPress={() => handlePressAlbum(item.id, item.dp)}>
+                    <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
+                    <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+                    <ChevronRight size={20} color="orange" />
+                  </TouchableOpacity>
+                </View>
+              )
+            }))}
+            {(searchPressed) ? (artists?.map((item, index) => {
+              return (
+                <View style={styles.flexcol} key={index}>
+                  <TouchableOpacity style={styles.row} onPress={() => handlePress(item.id, item.dp)}>
+                    <Image source={item.dp ? { uri: item.dp } : require("../../assets/images/dp.png")} style={styles.image} />
+                    <Text style={styles.result}>{item.name.slice(0, 34)}</Text>
+                    <ChevronRight size={20} color="orange" />
+                  </TouchableOpacity>
+                </View>
+              )
+            })) : (
               <View>
-                <Text style={styles.heading}>Top Genres</Text>
-                <View style={styles.container2}>
-                  <Image style={styles.mainimg} source={require("../../assets/images/image3.png")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/image.png")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/image2.png")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/image1.png")}></Image>
+                <View>
+                  <Text style={styles.heading}>Top Genres</Text>
+                  <View style={styles.container2}>
+                    <Image style={styles.mainimg} source={require("../../assets/images/image3.png")}></Image>
+                    <Image style={styles.mainimg} source={require("../../assets/images/image.png")}></Image>
+                    <Image style={styles.mainimg} source={require("../../assets/images/image2.png")}></Image>
+                    <Image style={styles.mainimg} source={require("../../assets/images/image1.png")}></Image>
+                  </View>
+                </View>
+                <View>
+                  <Text style={styles.heading}>Most Popular Artists</Text>
+                  <View style={styles.container2}>
+                    <Image style={styles.mainimg} source={require("../../assets/images/klamar.jpeg")}></Image>
+                    <Image style={styles.mainimg} source={require("../../assets/images/swift.jpeg")}></Image>
+                    <Image style={styles.mainimg} source={require("../../assets/images/weeknd.jpg")}></Image>
+                    <Image style={styles.mainimg} source={require("../../assets/images/ts.jpeg")}></Image>
+                  </View>
                 </View>
               </View>
-              <View>
-                <Text style={styles.heading}>Most Popular Artists</Text>
-                <View style={styles.container2}>
-                  <Image style={styles.mainimg} source={require("../../assets/images/klamar.jpeg")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/swift.jpeg")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/weeknd.jpg")}></Image>
-                  <Image style={styles.mainimg} source={require("../../assets/images/ts.jpeg")}></Image>
-                </View>
-              </View>
-            </View>
-          )
-          }
-        </View>
+            )
+            }
+          </View>
       </ScrollView>
     </SafeAreaView>
   )
