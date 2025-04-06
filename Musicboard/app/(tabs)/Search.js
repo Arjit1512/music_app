@@ -160,10 +160,10 @@ const SearchPage = () => {
         <StatusBar barStyle="light-content" backgroundColor="#151515" />
         <View style={searchPressed ? styles.sdiv : styles.searchdiv} onChange={handleChange}>
           <TextInput style={styles.bar} onFocus={() => setSearchPressed(true)}
-            onChangeText={async (text) => { setSearch(text) }} value={search} placeholder=' search' placeholderTextColor='#888' textAlignVertical="center" ></TextInput>
+           onChangeText={(text) => setSearch(text)} value={search} placeholder=' search' placeholderTextColor='#888' textAlignVertical="center" ></TextInput>
           {searchPressed && (
             <View style={styles.cancel} >
-              <Text style={{ color: "grey" }} onPress={() => { setSearchPressed(false), setSearch('') }} >cancel</Text>
+              <Text style={{ color: "grey" }} onPress={() => { setSearchPressed(false); setSearch('') }} >cancel</Text>
             </View>
           )}
         </View>

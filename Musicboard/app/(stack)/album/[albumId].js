@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
     },
     ndiv: {
         backgroundColor: "#0B192C",
-        height: 50,
+        height: 60,
         marginTop: 12,
         width: "94%",
         borderRadius: 12,
@@ -560,6 +560,9 @@ const styles = StyleSheet.create({
     nrtext: {
         color: "grey",
         fontSize: 13,
+        position:"relative",
+        bottom:6,
+        alignSelf:"center",
         fontFamily: "OpenSans-Italic"
     },
     //reviews section
