@@ -37,9 +37,7 @@ const SearchPage = () => {
     "OpenSans-Bold": require("../../assets/fonts/OpenSans-Bold.ttf"),
   })
 
-  if (!fontsLoaded) {
-    return <Loader />
-  }
+  
 
   const getArtists = async () => {
     try {
@@ -153,7 +151,11 @@ const SearchPage = () => {
     handleChange();
   }, [option])
 
+  if (!fontsLoaded) {
+    return <Loader />
+  }
 
+  
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
