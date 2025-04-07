@@ -42,19 +42,17 @@ const login = () => {
         const formdata = new FormData();
         formdata.append('username', username);
         formdata.append('password', password);
-        formData.append('dp', {
-            uri: profilePic,
+        formdata.append('dp', {
+            uri: profilePic.uri,
             name: 'profile.jpg',
             type: 'image/jpeg',
-          });
+        });
 
         try {
-            const response = await axios.post(`${API_URL}/register`, {
+            const response = await axios.post(`${API_URL}/register`, formdata, {
                 headers: {
-                    'Content-Type': 'muiltipart/form-data'
+                    'Content-Type': 'multipart/form-data'
                 },
-                method: 'POST',
-                body: formdata
             })
 
 
@@ -64,9 +62,9 @@ const login = () => {
                 await AsyncStorage.setItem("userId", response.data.userId)
                 router.push("/")
             }
-            else{
-                console.log('username: ',username)
-                console.log('password: ',password)
+            else {
+                console.log('username: ', username)
+                console.log('password: ', password)
                 alert(response.data.Message);
             }
         } catch (error) {
@@ -206,21 +204,21 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "flex-start",
         marginTop: 20,
-        gap:20,
-        marginBottom:25
+        gap: 20,
+        marginBottom: 25
     },
     btn2: {
         height: 30,
-        width:70,
+        width: 70,
         padding: 4,
         textAlign: "center",
         alignItems: "center",
         justifyContent: "center",
-        borderWidth:1,
-        borderColor:"white",
+        borderWidth: 1,
+        borderColor: "white",
         color: "white",
-        position:"absolute",
-        right:65
+        position: "absolute",
+        right: 65
     },
     btntext2: {
         fontSize: 10,
@@ -232,9 +230,9 @@ const styles = StyleSheet.create({
         color: "grey",
         fontStyle: "italic",
         fontSize: 11,
-        marginTop:8,
-        position:"absolute",
-        left:-55,
+        marginTop: 8,
+        position: "absolute",
+        left: -55,
         fontFamily: "OpenSans-Italic"
     }
 })

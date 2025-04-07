@@ -3,12 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
 from typing import List, Optional
+import redis.asyncio as redis
 from datetime import datetime,timezone
 from bson import ObjectId
 from dotenv import load_dotenv
 import boto3
 import os
 from uuid import uuid4
+import json
+
+
 
 app = FastAPI()
 
@@ -21,6 +25,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+REDIS_URL = os.getenv("REDIS_URL")
+redis_client = redis.from_url(REDIS_URL, decode_responses=True)
 
 
 @app.get("/")
@@ -158,6 +165,10 @@ async def add_review(id: str, review: Review):
     newreview_id = str(result.inserted_id)
     
     await collection.update_one({"_id":ObjectId(id)}, {"$push" : {"reviews": newreview_id}})
+    
+    # Invalidate global cache
+    await redis_client.delete("global:reviews")
+
 
     return {"Message": "Review added successfully" , "new_review_id":newreview_id}
     
@@ -175,6 +186,11 @@ async def delete_review(id:str, review_id: str):
         return {"Error":"Review does not exists!"}
     await reviews.delete_one({"_id":ObjectId(review_id)})
     await collection.update_one({"_id":ObjectId(id)} , {"$pull" : {"reviews" : review_id}})
+
+    # Invalidate global cache
+    await redis_client.delete("global:reviews")
+
+
     return {"Message": "Review deleted successfully"}
 
 @app.get("/{id}/reviews")
@@ -200,9 +216,18 @@ async def show_reviews(id:str):
 async def get_reviews():
     db = await get_db()
     reviews = db["reviews"]
+
+
+    cached_array = await redis_client.get("global:reviews")
+
+    if(cached_array):
+        return {"Message":"Reviews fetched successfully from redis!", "reviews": json.loads(cached_array)}
+
     array = await reviews.find().sort("date", -1).to_list(length=100) # to find latest 100 reviews
     for review in array:
         review["_id"] = str(review["_id"])
+
+    await redis_client.set("global:reviews", json.dumps(array))    
     return {"Message":"Reviews fetched successfully!", "reviews": array}
 
 

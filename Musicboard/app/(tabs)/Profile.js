@@ -188,11 +188,11 @@ const Profile = () => {
 
             <View style={styles.greybox}>
                 <TouchableOpacity style={styles.flexcol} onPress={navigateToAll}>
-                    <Text style={styles.greytext}>{user?.reviews?.length}</Text>
+                    <Text style={styles.greytext}>{user?.reviews?.length || 0}</Text>
                     <Text style={styles.greytext}>Ratings</Text>
                 </TouchableOpacity>
                 <View style={styles.flexcol}>
-                    <Text style={styles.greytext}>{user?.friends?.length}</Text>
+                    <Text style={styles.greytext}>{user?.friends?.length || 0}</Text>
                     <Text style={styles.greytext}>Followers</Text>
                 </View>
             </View>

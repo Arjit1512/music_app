@@ -269,6 +269,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         paddingVertical: 5,
         lineHeight: 18,
+        fontFamily: "OpenSans",
     },
     resultb: {
         color: 'white',
