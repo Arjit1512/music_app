@@ -211,46 +211,113 @@ async def show_reviews(id:str):
     for review in result:
         review["_id"] = str(review["_id"])  # Convert ObjectId to string
     return result
+
+
 @app.get("/reviews")
 async def get_reviews():
     db = await get_db()
     reviews = db["reviews"]
 
-    # Try to get from Redis first with better error handling
+    # Debug Redis connection
+    print(f"REDIS_URL configured: {REDIS_URL is not None}")
+    try:
+        ping_result = await redis_client.ping()
+        print(f"Redis ping result: {ping_result}")
+    except Exception as e:
+        print(f"Redis ping error: {str(e)}")
+
+    # Try to get from Redis with verbose logging
     redis_data = None
     try:
+        print("Attempting to fetch from Redis...")
         redis_data = await redis_client.get("global:reviews")
-        print(f"Redis cache status: {'HIT' if redis_data else 'MISS'}")  # Debug log
+        print(f"Redis GET result: {redis_data is not None}")
+        if redis_data:
+            print(f"Redis data length: {len(redis_data)}")
     except Exception as e:
-        print(f"Redis GET error: {str(e)}")
-        # Continue execution to fetch from MongoDB
+        print(f"Redis GET detailed error: {str(e)}, Type: {type(e)}")
 
     # If Redis has data, parse and return it
     if redis_data:
         try:
             parsed_data = json.loads(redis_data)
+            print("Successfully parsed Redis data")
             return {"Message": "Reviews fetched successfully from Redis!", "reviews": parsed_data}
         except json.JSONDecodeError as e:
-            print(f"JSON decode error: {str(e)}")
-            # If JSON parsing fails, continue to fetch from MongoDB
-            # Invalidate the corrupted cache
-            await redis_client.delete("global:reviews")
+            print(f"JSON decode detailed error: {str(e)}")
+            try:
+                await redis_client.delete("global:reviews")
+                print("Corrupted cache deleted")
+            except Exception as delete_error:
+                print(f"Failed to delete cache: {str(delete_error)}")
     
-    # Fetch from MongoDB if Redis failed or had no data
-    print("Fetching from MongoDB")  # Debug log
+    # Fetch from MongoDB
+    print("Starting MongoDB fetch...")
     array = await reviews.find().sort("date", -1).to_list(length=100)
+    array_length = len(array)
+    print(f"MongoDB returned {array_length} documents")
+    
     for review in array:
         review["_id"] = str(review["_id"])
     
-    # Set in Redis with better error handling
+    # Try to set in Redis with more debug info
     try:
+        print("Preparing to store in Redis...")
         json_data = json.dumps(array)
+        json_length = len(json_data)
+        print(f"JSON data length: {json_length} bytes")
+        
+        # Check if data is too large for Redis
+        if json_length > 500000:  # 500KB, adjust based on your Redis limits
+            print("Warning: Data may be too large for Redis standard limits")
+        
+        print("Setting data in Redis...")
         set_result = await redis_client.set("global:reviews", json_data, ex=86400)
-        print(f"Redis SET result: {set_result}")  # Debug log
+        print(f"Redis SET detailed result: {set_result}")
     except Exception as e:
-        print(f"Redis SET error: {str(e)}")
+        print(f"Redis SET detailed error: {str(e)}, Type: {type(e)}")
     
     return {"Message": "Reviews fetched successfully from MongoDB!", "reviews": array}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
