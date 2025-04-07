@@ -7,3 +7,4 @@ pymongo
 pydantic
 typing-extensions
 boto3
+redis
