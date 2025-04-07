@@ -218,7 +218,11 @@ async def get_reviews():
     reviews = db["reviews"]
 
 
-    cached_array = await redis_client.get("global:reviews")
+    try:
+        cached_array = await redis_client.get("global:reviews")
+    except Exception as e:
+        print("Redis GET error:", e)
+        cached_array = None
 
     if(cached_array):
         return {"Message":"Reviews fetched successfully from redis!", "reviews": json.loads(cached_array)}
