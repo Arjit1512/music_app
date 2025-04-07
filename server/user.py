@@ -211,28 +211,47 @@ async def show_reviews(id:str):
     for review in result:
         review["_id"] = str(review["_id"])  # Convert ObjectId to string
     return result
-
 @app.get("/reviews")
 async def get_reviews():
     db = await get_db()
     reviews = db["reviews"]
 
-
+    # Try to get from Redis first with better error handling
+    redis_data = None
     try:
-        cached_array = await redis_client.get("global:reviews")
+        redis_data = await redis_client.get("global:reviews")
+        print(f"Redis cache status: {'HIT' if redis_data else 'MISS'}")  # Debug log
     except Exception as e:
-        print("Redis GET error:", e)
-        cached_array = None
+        print(f"Redis GET error: {str(e)}")
+        # Continue execution to fetch from MongoDB
 
-    if(cached_array):
-        return {"Message":"Reviews fetched successfully from redis!", "reviews": json.loads(cached_array)}
-
-    array = await reviews.find().sort("date", -1).to_list(length=100) # to find latest 100 reviews
+    # If Redis has data, parse and return it
+    if redis_data:
+        try:
+            parsed_data = json.loads(redis_data)
+            return {"Message": "Reviews fetched successfully from Redis!", "reviews": parsed_data}
+        except json.JSONDecodeError as e:
+            print(f"JSON decode error: {str(e)}")
+            # If JSON parsing fails, continue to fetch from MongoDB
+            # Invalidate the corrupted cache
+            await redis_client.delete("global:reviews")
+    
+    # Fetch from MongoDB if Redis failed or had no data
+    print("Fetching from MongoDB")  # Debug log
+    array = await reviews.find().sort("date", -1).to_list(length=100)
     for review in array:
         review["_id"] = str(review["_id"])
+    
+    # Set in Redis with better error handling
+    try:
+        json_data = json.dumps(array)
+        set_result = await redis_client.set("global:reviews", json_data, ex=86400)
+        print(f"Redis SET result: {set_result}")  # Debug log
+    except Exception as e:
+        print(f"Redis SET error: {str(e)}")
+    
+    return {"Message": "Reviews fetched successfully from MongoDB!", "reviews": array}
 
-    await redis_client.set("global:reviews", json.dumps(array), ex=86400)    
-    return {"Message":"Reviews fetched successfully!", "reviews": array}
 
 
 @app.get("/show-reviews/{spotifyId}")
