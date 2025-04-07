@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
@@ -6,7 +6,9 @@ from typing import List, Optional
 from datetime import datetime,timezone
 from bson import ObjectId
 from dotenv import load_dotenv
+import boto3
 import os
+from uuid import uuid4
 
 app = FastAPI()
 
@@ -19,6 +21,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/")
 def index():
@@ -50,24 +53,73 @@ class Review(BaseModel):
 class User(BaseModel):
     username : str = ''
     password : str = ''
+    dp: str = ''
     reviews :  List[Review] = []
     friends : List[str] = []
 
+
+
+# S3 Configuration
+
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name=os.getenv("AWS_REGION")
+)
+
+BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+
+async def upload_file_to_s3(file: UploadFile) -> str:
+    file_extension = file.filename.split('.')[-1]
+    unique_filename = f"{uuid4()}.{file_extension}"
+    file_key = f"musicboard/{unique_filename}"
+
+    try:
+        s3.upload_fileobj(
+            file.file,
+            BUCKET_NAME,
+            file_key,
+            ExtraArgs={"ContentType": file.content_type}
+        )
+        file_url = f"https://{BUCKET_NAME}.s3.{os.getenv('AWS_REGION')}.amazonaws.com/{file_key}"
+        return file_url
+    except Exception as e:
+        raise Exception(f"S3 upload failed: {str(e)}")
+
+
+
+
+
+
+# dp: UploadFile = File(...) is Equivalent of upload.single("dp")
+
 # login-section
 @app.post("/register")
-async def register(user: User):
+async def register(username: str = Form(...), password: str = Form(...), dp: UploadFile = File(...)): # this input indicates multipart/form-data
+    print("Received username:", username)
+    print("Received password:", password)
+    if username=='' or password=='':
+        return {"Message": "username and password are required!"}
+    
     db = await get_db()
     collection = db["users"]
-    if user.username=='' or user.password=='':
-        return {"Message": "username and password are required!"}
-    existinguser = await collection.find_one({"username" : user.username})
+    existinguser = await collection.find_one({"username" : username})
     if existinguser:
         return {"Message" : "User already exists with same username!"}
-    newuser = user.model_dump() #replacing dict with model_dump since dict is depreciated
+    
+    file_url = await upload_file_to_s3(dp)
+    
+    newuser = {
+        "username" : username,
+        "password" : password,
+        "dp" : file_url
+    }
     result = await collection.insert_one(newuser)
     answer = result.inserted_id
     answer = str(answer)
-    return {"Message": "User added successfully!", "userId" : answer}
+    return {"Message": "User added successfully!", "userId" : answer, "dp" : file_url}
+
 
 @app.post("/login")
 async def login(user: User):
@@ -99,7 +151,7 @@ async def add_review(id: str, review: Review):
     if not existinguser:
         return {"Error":"User does not exists!"}
     print(f"Received data: {review}")
-    newreview = review.model_dump()
+    newreview = review.model_dump() #replacing dict with model_dump since dict is depreciated
     newreview["userId"] = id
     newreview["username"] = existinguser["username"]
     newreview["date"] = datetime.now(timezone.utc).isoformat()

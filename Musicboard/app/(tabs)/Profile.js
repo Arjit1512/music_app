@@ -50,14 +50,14 @@ const Profile = () => {
                 setLoading(true)
                 try {
                     const userId = await AsyncStorage.getItem("userId");
-                    if(!userId)return;
+                    if (!userId) return;
                     const response = await axios.get(`${API_URL}/${userId}/reviews`)
                     console.log('Response: ', response.data);
-                    if(response.data.Message==="User does not exists!"){
+                    if (response.data.Message === "User does not exists!") {
                         setIsl(false);
                         return;
                     }
-                        setRatings(response.data || []);
+                    setRatings(response.data || []);
                     if (!Array.isArray(response.data)) {
                         console.error("Invalid response format:", response.data);
                         setRatings([]);
@@ -156,7 +156,7 @@ const Profile = () => {
             <Loader />
         )
     }
-    console.log('ISLOGGEDIN::::::::: ',isl);
+    console.log('ISLOGGEDIN::::::::: ', isl);
 
     if (!isl) {
         return (
@@ -183,7 +183,7 @@ const Profile = () => {
             <View style={styles.heading}>
                 <Text style={styles.h1}>{user?.username}</Text>
 
-                <Image source={require("../../assets/images/dp.png")} style={styles.img} />
+                <Image source={user.dp ? { uri: user.dp } : require("../../assets/images/dp.png")} style={styles.img} />
             </View>
 
             <View style={styles.greybox}>
