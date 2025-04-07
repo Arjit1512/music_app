@@ -231,7 +231,7 @@ async def get_reviews():
     for review in array:
         review["_id"] = str(review["_id"])
 
-    await redis_client.set("global:reviews", json.dumps(array))    
+    await redis_client.set("global:reviews", json.dumps(array), ex=86400)    
     return {"Message":"Reviews fetched successfully!", "reviews": array}
 
 
