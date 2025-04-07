@@ -18,7 +18,7 @@ const Home = () => {
     const SPOTIFY_CLIENT_SECRET = Constants.expoConfig.extra.SPOTIFY_CLIENT_SECRET;
     const API_URL = Constants.expoConfig.extra.API_URL;
     // console.log('SCI: ',SPOTIFY_CLIENT_ID);
-    console.log('API URL: ', API_URL);
+    // console.log('API URL: ', API_URL);
 
     let fontsLoaded = useFonts({
         "OpenSans": require("../../assets/fonts/OpenSans-Regular.ttf"),
@@ -71,9 +71,11 @@ const Home = () => {
         React.useCallback(() => {
             const getFeed = async () => {
                 setLoading(true)
+                console.log("Calling reviews API at:", `${API_URL}/reviews`);
                 try {
                     const response = await axios.get(`${API_URL}/reviews`)
-                    //console.log('API Response:', response.data);
+                    console.log('API RESPONSE: ',response.data.Message)
+                    
                     const reviews = response.data.reviews;
 
                     const updatedReviews = await Promise.all(

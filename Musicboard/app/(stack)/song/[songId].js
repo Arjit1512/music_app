@@ -146,7 +146,6 @@ const Track = () => {
 
 
     // console.log('SONG: ', song)
-    console.log('Reviews: ', reviews);
 
     if (loading) {
         return (
