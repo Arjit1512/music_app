@@ -1,8 +1,8 @@
 fastapi
 uvicorn
 motor
-mangum
 python-dotenv
 pymongo
 pydantic
 typing-extensions
+boto3

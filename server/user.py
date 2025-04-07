@@ -97,8 +97,6 @@ async def upload_file_to_s3(file: UploadFile) -> str:
 # login-section
 @app.post("/register")
 async def register(username: str = Form(...), password: str = Form(...), dp: UploadFile = File(...)): # this input indicates multipart/form-data
-    print("Received username:", username)
-    print("Received password:", password)
     if username=='' or password=='':
         return {"Message": "username and password are required!"}
     
