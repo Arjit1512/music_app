@@ -60,6 +60,7 @@ const rating = () => {
                 stars: rating,
                 comment: cleanComment || ''
             })
+            console.log('RESPONSE FROM RATING PAGE: ',response.data)
             if (response.data.Message === "Review added successfully") {
                 setComment('');
                 setRating(0);
@@ -76,6 +77,7 @@ const rating = () => {
             console.log(response.data.message)
         } catch (error) {
             console.log('Error: ', error)
+            router.back()
         }
         finally {
             setLoading(false);

@@ -29,6 +29,7 @@ const Track = () => {
     let fontsLoaded = useFonts({
         "OpenSans": require("../../../assets/fonts/OpenSans-Regular.ttf"),
         "OpenSans-Bold": require("../../../assets/fonts/OpenSans-Bold.ttf"),
+        "OpenSans-Italic": require("../../../assets/fonts/OpenSans-Italic.ttf"),
     })
 
     useFocusEffect(
