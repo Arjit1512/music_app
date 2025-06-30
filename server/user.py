@@ -184,8 +184,8 @@ async def delete_review(id:str, review_id: str):
     review = await reviews.find_one({"_id":ObjectId(review_id)})
     if not review:
         return {"Error":"Review does not exists!"}
-    await reviews.delete_one({"_id":ObjectId(review_id)})
     await collection.update_one({"_id":ObjectId(id)} , {"$pull" : {"reviews" : review_id}})
+    await reviews.delete_one({"_id":ObjectId(review_id)})
 
     # Invalidate global cache
     await redis_client.delete("global:reviews")
